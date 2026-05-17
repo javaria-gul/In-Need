@@ -4,14 +4,21 @@ import { Injectable } from '@nestjs/common';
 export class ConfigService {
   // ─── DATABASE ─────────────────────────────────────────────────────────────
   get database() {
+    const host = process.env.DATABASE_HOST || 'db';
+    const useSsl =
+      process.env.DATABASE_SSL === 'true' ||
+      host.includes('neon.tech') ||
+      host.includes('postgres.database.azure.com');
+
     return {
-      host: process.env.DATABASE_HOST || 'db',
+      host,
       port: parseInt(process.env.DATABASE_PORT || '5432'),
       username: process.env.DATABASE_USER || 'user',
       password: process.env.DATABASE_PASSWORD || 'password',
       database: process.env.DATABASE_NAME || 'apka_hunar_db',
       synchronize: this.environment === 'development',
       logging: this.environment === 'development',
+      ssl: useSsl ? { rejectUnauthorized: false } : false,
       retryAttempts: 15,
       retryDelay: 3000,
       connectTimeoutMS: 10000,

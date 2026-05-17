@@ -48,23 +48,41 @@ export class ReviewsService {
 
     const revieweeId =
       job.posterId === reviewerId ? job.acceptedSeekerId : job.posterId;
+    if (!revieweeId) {
+      throw new BadRequestException('No reviewee available for this job yet');
+    }
     const revieweeRole =
       job.posterId === reviewerId ? 'worker' : 'employer';
 
-    const review = this.reviewRepo.create({
+    const imageUrls = [beforeImageUrl, afterImageUrl].filter(
+      (url): url is string => Boolean(url),
+    );
+
+    const reviewPayload: Partial<Review> = {
       jobId: dto.jobId,
       reviewerId,
-      revieweeId: revieweeId!,
+      revieweeId,
       revieweeRole,
       overallRating: Number(dto.overallRating),
-      workQualityRating: dto.workQualityRating ? Number(dto.workQualityRating) : undefined,
-      behaviorRating: dto.behaviorRating ? Number(dto.behaviorRating) : undefined,
-      smoothnessRating: dto.smoothnessRating ? Number(dto.smoothnessRating) : undefined,
-      comment: dto.comment?.trim(),
-      beforeImageUrl: beforeImageUrl || null,
-      afterImageUrl: afterImageUrl || null,
-      imageUrls: [beforeImageUrl, afterImageUrl].filter((url) => url) as string[],
-    });
+      workQualityRating:
+        dto.workQualityRating !== undefined
+          ? Number(dto.workQualityRating)
+          : undefined,
+      behaviorRating:
+        dto.behaviorRating !== undefined
+          ? Number(dto.behaviorRating)
+          : undefined,
+      smoothnessRating:
+        dto.smoothnessRating !== undefined
+          ? Number(dto.smoothnessRating)
+          : undefined,
+      comment: dto.comment?.trim() || undefined,
+      beforeImageUrl: beforeImageUrl || undefined,
+      afterImageUrl: afterImageUrl || undefined,
+      imageUrls,
+    };
+
+    const review = this.reviewRepo.create(reviewPayload);
 
     const saved = await this.reviewRepo.save(review);
 
@@ -81,7 +99,7 @@ export class ReviewsService {
       reviewId: saved.id,
       jobId: saved.jobId,
       reviewerId: saved.reviewerId,
-      revieweeId: saved.revieweeId!,
+      revieweeId: saved.revieweeId,
       overallRating: saved.overallRating,
       comment: saved.comment || '',
       imageUrls: saved.imageUrls || [],
@@ -101,7 +119,7 @@ export class ReviewsService {
     await this.reviewRepo.update(saved.id, { blockchainHash: hash });
     saved.blockchainHash = hash;
 
-    await this.recalcRating(revieweeId!, revieweeRole);
+    await this.recalcRating(revieweeId, revieweeRole);
     return saved;
   }
 

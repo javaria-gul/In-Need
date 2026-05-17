@@ -9,6 +9,7 @@ import { ReviewsService } from './reviews.service.js';
 import { ReviewsController } from './reviews.controller.js';
 import { BlockchainService } from './blockchain.service.js';
 import { AuthModule } from '../auth/auth.module.js';
+import { CloudinaryService } from '../cloudinary/cloudinary.service.js';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { AuthModule } from '../auth/auth.module.js';
     HttpModule,
     AuthModule,
   ],
-  providers: [ReviewsService, BlockchainService],
+  providers: [ReviewsService, BlockchainService, CloudinaryService],
   controllers: [ReviewsController],
   exports: [ReviewsService],
 })
