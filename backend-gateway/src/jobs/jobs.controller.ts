@@ -100,10 +100,19 @@ export class JobsController {
   @Patch(':id/status')
   updateStatus(
     @Param('id', ParseIntPipe) jobId: number,
-    @Body() body: { status: string },
+    @Body() body: { status: string; progress?: number },
     @Request() req: any,
   ) {
-    return this.svc.updateJobStatus(req.user.userId, jobId, body.status);
+    return this.svc.updateJobStatus(req.user.userId, jobId, body.status, body.progress);
+  }
+
+  @Patch(':id/progress')
+  updateProgress(
+    @Param('id', ParseIntPipe) jobId: number,
+    @Body() body: { progress: number; status?: string },
+    @Request() req: any,
+  ) {
+    return this.svc.updateJobProgress(req.user.userId, jobId, body.progress, body.status);
   }
 
   @Post(':id/relist')

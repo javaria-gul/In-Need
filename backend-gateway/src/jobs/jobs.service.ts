@@ -15,6 +15,8 @@ import { ChatGateway } from '../chat/gateways/chat.gateway.js';
 
 @Injectable()
 export class JobsService {
+  private readonly progressCache = new Map<number, number>();
+
   constructor(
     @InjectRepository(Job) private jobRepo: Repository<Job>,
     @InjectRepository(Bid) private bidRepo: Repository<Bid>,
@@ -344,18 +346,21 @@ export class JobsService {
       throw new BadRequestException('No worker assigned to this job');
     }
 
+    this.progressCache.set(jobId, 100);
     await this.jobRepo.update(jobId, { status: JobStatus.COMPLETE });
     const updated = await this.jobRepo.findOne({ where: { id: jobId } });
 
     // ✅ Notify both parties to submit reviews
     this.chatGateway.sendToUser(job.posterId, 'job_completed', {
       jobId,
+      progress: 100,
       revieweeId: job.acceptedSeekerId,
       message: 'Job completed! Please submit your review.',
     });
 
     this.chatGateway.sendToUser(job.acceptedSeekerId, 'job_completed', {
       jobId,
+      progress: 100,
       revieweeId: job.posterId,
       message: 'Job completed! Please submit your review.',
     });
@@ -363,8 +368,24 @@ export class JobsService {
     return updated!;
   }
 
+  private notifyJobCompleted(jobId: number, posterId: number, acceptedSeekerId: number) {
+    this.chatGateway.sendToUser(posterId, 'job_completed', {
+      jobId,
+      progress: 100,
+      revieweeId: acceptedSeekerId,
+      message: 'Job completed! Please submit your review.',
+    });
+
+    this.chatGateway.sendToUser(acceptedSeekerId, 'job_completed', {
+      jobId,
+      progress: 100,
+      revieweeId: posterId,
+      message: 'Job completed! Please submit your review.',
+    });
+  }
+
   // ── RE-LIST JOB ────────────────────────────────────────────────────────────
-  async updateJobStatus(userId: number, jobId: number, status: string): Promise<Job> {
+  async updateJobStatus(userId: number, jobId: number, status: string, progress?: number): Promise<Job> {
     const job = await this.jobRepo.findOne({ where: { id: jobId } });
     if (!job) throw new NotFoundException('Job not found');
     if (job.posterId !== userId && job.acceptedSeekerId !== userId) {
@@ -382,10 +403,19 @@ export class JobsService {
       cancelled: JobStatus.CANCELLED,
     };
 
-    const mapped = mapping[status.toLowerCase().trim()];
+    const normalizedStatus = status.toLowerCase().trim();
+    const mapped = mapping[normalizedStatus];
     if (!mapped) throw new BadRequestException('Invalid status');
 
-    if (mapped === JobStatus.ACTIVE) {
+    const nextProgress = typeof progress === 'number'
+      ? Math.max(0, Math.min(100, Math.floor(progress)))
+      : this.progressCache.get(jobId) ?? 0;
+
+    const shouldComplete = nextProgress >= 100 || mapped === JobStatus.COMPLETE;
+
+    this.progressCache.set(jobId, nextProgress);
+
+    if (mapped === JobStatus.ACTIVE && !shouldComplete) {
       if (job.status !== JobStatus.ACTIVE) {
         throw new BadRequestException('Job is not currently active');
       }
@@ -394,22 +424,76 @@ export class JobsService {
       }
     }
 
-    await this.jobRepo.update(jobId, { status: mapped });
+    await this.jobRepo.update(jobId, {
+      status: shouldComplete ? JobStatus.COMPLETE : mapped,
+    });
     const updated = await this.jobRepo.findOne({ where: { id: jobId } });
 
     // Notify both parties of status update without failing the request if notifications fail.
     try {
-      this.chatGateway.sendToUser(job.posterId, 'job_status_updated', { jobId, status });
+      this.chatGateway.sendToUser(job.posterId, 'job_status_updated', {
+        jobId,
+        status: shouldComplete ? 'complete' : normalizedStatus,
+        progress: nextProgress,
+      });
     } catch (error) {
       console.error('Failed to notify poster of job status update:', error);
     }
 
     if (job.acceptedSeekerId) {
       try {
-        this.chatGateway.sendToUser(job.acceptedSeekerId, 'job_status_updated', { jobId, status });
+        this.chatGateway.sendToUser(job.acceptedSeekerId, 'job_status_updated', {
+          jobId,
+          status: shouldComplete ? 'complete' : normalizedStatus,
+          progress: nextProgress,
+        });
       } catch (error) {
         console.error('Failed to notify seeker of job status update:', error);
       }
+    }
+
+    if (shouldComplete && job.status !== JobStatus.COMPLETE && job.acceptedSeekerId) {
+      this.notifyJobCompleted(jobId, job.posterId, job.acceptedSeekerId);
+    }
+
+    return updated!;
+  }
+
+  async updateJobProgress(userId: number, jobId: number, progress: number, status?: string): Promise<Job> {
+    const job = await this.jobRepo.findOne({ where: { id: jobId } });
+    if (!job) throw new NotFoundException('Job not found');
+    if (job.posterId !== userId && job.acceptedSeekerId !== userId) {
+      throw new ForbiddenException('Not authorized');
+    }
+
+    const nextProgress = Math.max(0, Math.min(100, Math.floor(progress)));
+    const shouldComplete = nextProgress >= 100;
+
+    this.progressCache.set(jobId, nextProgress);
+
+    await this.jobRepo.update(jobId, {
+      status: shouldComplete ? JobStatus.COMPLETE : job.status,
+    });
+
+    const updated = await this.jobRepo.findOne({ where: { id: jobId } });
+
+    const payload = {
+      jobId,
+      progress: nextProgress,
+      status: shouldComplete ? 'complete' : (status?.toLowerCase().trim() || job.status),
+    };
+
+    try {
+      this.chatGateway.sendToUser(job.posterId, 'job_progress_updated', payload);
+      if (job.acceptedSeekerId) {
+        this.chatGateway.sendToUser(job.acceptedSeekerId, 'job_progress_updated', payload);
+      }
+    } catch (error) {
+      console.error('Failed to broadcast job progress update:', error);
+    }
+
+    if (shouldComplete && job.status !== JobStatus.COMPLETE && job.acceptedSeekerId) {
+      this.notifyJobCompleted(jobId, job.posterId, job.acceptedSeekerId);
     }
 
     return updated!;

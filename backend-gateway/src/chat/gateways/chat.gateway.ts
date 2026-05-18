@@ -101,7 +101,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Deliver to receiver if online
     const receiverSid = this.userSockets.get(payload.receiverId);
-    if (receiverSid) this.server.to(receiverSid).emit('message_received', outgoing);
+    // Avoid sending twice to the same socket that already received the echo above
+    if (receiverSid && receiverSid !== client.id) {
+      this.server.to(receiverSid).emit('message_received', outgoing);
+    }
   }
 
   @SubscribeMessage('mark_read')
