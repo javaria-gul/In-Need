@@ -46,7 +46,7 @@ class SocketService {
               .build());
 
       _socket!.onConnect((_) {
-        debugPrint('✅ Socket Connected');
+        debugPrint('Socket connected');
         _connected = true;
         if (!completer.isCompleted) {
           completer.complete();
@@ -54,12 +54,12 @@ class SocketService {
       });
 
       _socket!.onDisconnect((_) {
-        debugPrint('⚠️ Socket Disconnected');
+        debugPrint('Socket disconnected');
         _connected = false;
       });
 
       _socket!.onConnectError((err) {
-        debugPrint('⚠️ Connection Error: $err');
+        debugPrint('Connection error: $err');
         if (!completer.isCompleted) {
           completer.completeError('Connection error: $err');
         }
@@ -84,7 +84,7 @@ class SocketService {
         },
       );
     } catch (e) {
-      debugPrint('❌ Socket Init Error: $e');
+      debugPrint('Socket init error: $e');
       _connected = false;
       if (!completer.isCompleted) {
         completer.completeError(e);
@@ -116,7 +116,7 @@ class SocketService {
       try {
         await connect();
       } catch (e) {
-        debugPrint('⚠️ Socket reconnect failed: $e');
+        debugPrint('Socket reconnect failed: $e');
       }
     }
 
@@ -127,7 +127,7 @@ class SocketService {
         'message': message,
       });
     } else {
-      debugPrint('⚠️ sendMessage failed because socket is not connected');
+      debugPrint('sendMessage failed because socket is not connected');
     }
   }
 
@@ -137,7 +137,7 @@ class SocketService {
       try {
         await connect();
       } catch (e) {
-        debugPrint('⚠️ Socket reconnect failed for markRead: $e');
+        debugPrint('Socket reconnect failed for markRead: $e');
       }
     }
 

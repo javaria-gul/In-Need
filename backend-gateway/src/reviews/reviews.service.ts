@@ -29,8 +29,8 @@ export class ReviewsService {
   async submitReview(
     reviewerId: number,
     dto: CreateReviewDto,
-    beforeImageUrl?: string,
-    afterImageUrl?: string,
+    beforeImageUrl: string,
+    afterImageUrl: string,
   ): Promise<Review> {
     const job = await this.jobRepo.findOne({ where: { id: dto.jobId } });
     if (!job) throw new NotFoundException('Job not found');
@@ -54,9 +54,11 @@ export class ReviewsService {
     const revieweeRole =
       job.posterId === reviewerId ? 'worker' : 'employer';
 
-    const imageUrls = [beforeImageUrl, afterImageUrl].filter(
-      (url): url is string => Boolean(url),
-    );
+    if (!beforeImageUrl || !afterImageUrl) {
+      throw new BadRequestException('Before and after images are required');
+    }
+
+    const imageUrls = [beforeImageUrl, afterImageUrl];
 
     const reviewPayload: Partial<Review> = {
       jobId: dto.jobId,
@@ -77,8 +79,8 @@ export class ReviewsService {
           ? Number(dto.smoothnessRating)
           : undefined,
       comment: dto.comment?.trim() || undefined,
-      beforeImageUrl: beforeImageUrl || undefined,
-      afterImageUrl: afterImageUrl || undefined,
+      beforeImageUrl,
+      afterImageUrl,
       imageUrls,
     };
 

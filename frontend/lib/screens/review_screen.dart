@@ -1,4 +1,4 @@
-import 'dart:io' as io;
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
@@ -28,8 +28,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
   int _behavior = 0;
   int _smoothness = 0;
 
-  final List<XFile> _selectedImages = [];
   final _imagePicker = ImagePicker();
+  Uint8List? _beforeImageBytes;
+  Uint8List? _afterImageBytes;
 
   @override
   void dispose() {
@@ -37,25 +38,37 @@ class _ReviewScreenState extends State<ReviewScreen> {
     super.dispose();
   }
 
-  Future<void> _pickImages() async {
+  Future<void> _pickImage({required bool isBefore}) async {
     try {
-      final images = await _imagePicker.pickMultiImage(
+      final image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
         maxHeight: 1024,
         maxWidth: 1024,
         imageQuality: 85,
       );
-      if (images.isNotEmpty) {
+      if (image != null) {
+        final bytes = await image.readAsBytes();
         setState(() {
-          _selectedImages.addAll(images.take(5 - _selectedImages.length));
+          if (isBefore) {
+            _beforeImageBytes = bytes;
+          } else {
+            _afterImageBytes = bytes;
+          }
         });
       }
     } catch (e) {
-      if (mounted) showSnack(context, 'Failed to pick images: $e', err: true);
+      if (mounted) showSnack(context, 'Failed to pick image: $e', err: true);
     }
   }
 
-  void _removeImage(int index) {
-    setState(() => _selectedImages.removeAt(index));
+  void _removeImage({required bool isBefore}) {
+    setState(() {
+      if (isBefore) {
+        _beforeImageBytes = null;
+      } else {
+        _afterImageBytes = null;
+      }
+    });
   }
 
   Future<void> _submit() async {
@@ -63,18 +76,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
       showSnack(context, 'Please give an overall rating', err: true);
       return;
     }
+    if (_beforeImageBytes == null || _afterImageBytes == null) {
+      showSnack(context, 'Please add both before and after images', err: true);
+      return;
+    }
     setState(() => _loading = true);
     try {
-      // Convert selected images to bytes
-      List<List<int>>? imageBytes;
-      if (_selectedImages.isNotEmpty) {
-        imageBytes = [];
-        for (final xfile in _selectedImages) {
-          final bytes = await xfile.readAsBytes();
-          imageBytes.add(bytes);
-        }
-      }
-
       await _api.submitReview(
         {
           'jobId': widget.jobId,
@@ -85,7 +92,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
           if (_commentCtrl.text.trim().isNotEmpty)
             'comment': _commentCtrl.text.trim(),
         },
-        imageBytes,
+        beforeImageBytes: _beforeImageBytes!,
+        afterImageBytes: _afterImageBytes!,
       );
       if (mounted) {
         showSnack(context, 'Review submitted! Thank you.', ok: true);
@@ -184,17 +192,17 @@ class _ReviewScreenState extends State<ReviewScreen> {
               const SizedBox(height: 24),
 
               // Rating sections
-              _ratingSection('⭐ Overall Rating *', _overall,
+              _ratingSection('Overall Rating *', _overall,
                   (v) => setState(() => _overall = v),
                   size: 44, required: true),
               const SizedBox(height: 20),
-              _ratingSection('🔨 Work Quality', _quality,
+              _ratingSection('Work Quality', _quality,
                   (v) => setState(() => _quality = v)),
               const SizedBox(height: 20),
-              _ratingSection('🤝 Behavior & Communication', _behavior,
+              _ratingSection('Behavior & Communication', _behavior,
                   (v) => setState(() => _behavior = v)),
               const SizedBox(height: 20),
-              _ratingSection('✅ Smoothness of Process', _smoothness,
+              _ratingSection('Smoothness of Process', _smoothness,
                   (v) => setState(() => _smoothness = v)),
               const SizedBox(height: 24),
 
@@ -210,83 +218,29 @@ class _ReviewScreenState extends State<ReviewScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Image upload section (optional)
+              // Image upload section (required)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('📷 Upload Images (Optional)',
+                  const Text('Before & After Images *',
                       style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 14,
                           color: kBlack)),
                   const SizedBox(height: 12),
-                  GestureDetector(
-                    onTap: _pickImages,
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: kBg,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: kDivider, width: 1),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(Icons.image_outlined, size: 40, color: kGrey),
-                          const SizedBox(height: 8),
-                          const Text('Tap to add images (max 5)',
-                              style: TextStyle(color: kGrey, fontSize: 12)),
-                        ],
-                      ),
-                    ),
+                  _imageField(
+                    title: 'Before image',
+                    imageBytes: _beforeImageBytes,
+                    onPick: () => _pickImage(isBefore: true),
+                    onRemove: () => _removeImage(isBefore: true),
                   ),
-                  if (_selectedImages.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 100,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _selectedImages.length,
-                        itemBuilder: (_, i) => Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: Stack(
-                            children: [
-                              Container(
-                                width: 100,
-                                height: 100,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: kDivider),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.file(
-                                    io.File(_selectedImages[i].path),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                top: 4,
-                                right: 4,
-                                child: GestureDetector(
-                                  onTap: () => _removeImage(i),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: kRed,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    padding: const EdgeInsets.all(4),
-                                    child: const Icon(Icons.close_rounded,
-                                        color: kWhite, size: 14),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  const SizedBox(height: 12),
+                  _imageField(
+                    title: 'After image',
+                    imageBytes: _afterImageBytes,
+                    onPick: () => _pickImage(isBefore: false),
+                    onRemove: () => _removeImage(isBefore: false),
+                  ),
                   const SizedBox(height: 12),
                 ],
               ),
@@ -296,19 +250,19 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.08),
+                  color: kPrimaryLime.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                   border:
-                      Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                      Border.all(color: kPrimaryLime.withValues(alpha: 0.3)),
                 ),
                 child: const Row(children: [
-                  Icon(Icons.verified_outlined, color: Colors.green, size: 18),
+                  Icon(Icons.verified_outlined, color: kBlack, size: 18),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'This review will be secured by Blockchain — it cannot be changed once submitted.',
-                      style: TextStyle(
-                          color: Colors.green, fontSize: 12, height: 1.4),
+                      style:
+                          TextStyle(color: kBlack, fontSize: 12, height: 1.4),
                     ),
                   ),
                 ]),
@@ -319,7 +273,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 text: 'SUBMIT REVIEW',
                 loading: _loading,
                 onTap: _submit,
-                gradient: const LinearGradient(colors: [kGreen, kTealGreen]),
+                gradient: kValidationGrad,
               ),
               const SizedBox(height: 16),
               const Text('You cannot skip this step.',
@@ -392,4 +346,71 @@ class _ReviewScreenState extends State<ReviewScreen> {
           ],
         ),
       );
+
+  Widget _imageField({
+    required String title,
+    required Uint8List? imageBytes,
+    required VoidCallback onPick,
+    required VoidCallback onRemove,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title,
+            style: const TextStyle(
+                fontWeight: FontWeight.w700, fontSize: 13, color: kBlack)),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: onPick,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: kBg,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: kDivider, width: 1),
+            ),
+            child: imageBytes == null
+                ? Column(
+                    children: [
+                      const Icon(Icons.image_outlined, size: 34, color: kGrey),
+                      const SizedBox(height: 8),
+                      Text('Tap to add $title',
+                          style: const TextStyle(color: kGrey, fontSize: 12)),
+                    ],
+                  )
+                : Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.memory(
+                          imageBytes,
+                          height: 180,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: GestureDetector(
+                          onTap: onRemove,
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: kRed,
+                              shape: BoxShape.circle,
+                            ),
+                            padding: const EdgeInsets.all(4),
+                            child: const Icon(Icons.close_rounded,
+                                color: kWhite, size: 14),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
 }

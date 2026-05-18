@@ -1,12 +1,15 @@
-/// Configuration service to manage API endpoints and environment-specific settings
-/// This replaces hardcoded URLs with dynamic configuration
+// Configuration service to manage API endpoints and environment-specific settings
+// This replaces hardcoded URLs with dynamic configuration
 
 import 'package:flutter/foundation.dart';
 
 class AppConfig {
-  static const String _defaultBaseUrl = 'http://192.168.0.47:3000';
-  static const String _defaultAiUrl = 'http://192.168.0.47:8000';
-  static const String _defaultWsUrl = 'http://192.168.0.47:3000';
+  static const String _defaultBaseUrl =
+      'https://in-need-production.up.railway.app';
+  static const String _defaultAiUrl =
+      'https://in-need-production-00d5.up.railway.app';
+  static const String _defaultWsUrl =
+      'https://in-need-production.up.railway.app';
 
   // ─── Singleton Pattern ───────────────────────────────────────────────────
   static final AppConfig _instance = AppConfig._internal();
@@ -18,17 +21,17 @@ class AppConfig {
   // ─── Configuration Properties ────────────────────────────────────────────
   /// Backend API base URL
   /// Set via environment variable: FLUTTER_API_URL
-  /// Default: http://192.168.0.47:3000
+  /// Default: https://in-need-production.up.railway.app
   late String _baseUrl = _defaultBaseUrl;
 
   /// AI Service URL
   /// Set via environment variable: FLUTTER_AI_URL
-  /// Default: http://192.168.0.47:8000
+  /// Default: https://in-need-production-00d5.up.railway.app
   late String _aiUrl = _defaultAiUrl;
 
   /// WebSocket URL
   /// Set via environment variable: FLUTTER_WS_URL
-  /// Default: http://192.168.0.47:3000
+  /// Default: https://in-need-production.up.railway.app
   late String _wsUrl = _defaultWsUrl;
 
   // ─── Public Getters ─────────────────────────────────────────────────────
@@ -75,7 +78,7 @@ class AppConfig {
     _baseUrl = _defaultBaseUrl;
     _aiUrl = _defaultAiUrl;
     _wsUrl = _defaultWsUrl;
-    debugPrint('✅ Configuration reset to defaults');
+    debugPrint('Configuration reset to defaults');
   }
 
   /// Print current configuration (for debugging)

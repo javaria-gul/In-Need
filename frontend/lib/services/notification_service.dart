@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'storage_service.dart';
 
 class NotificationItem {
   final int id;

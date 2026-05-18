@@ -52,18 +52,18 @@ class _DashboardScreenState extends State<DashboardScreen>
     SocketService().on('bid_accepted', (d) {
       if (!mounted) return;
       _notifs.addNotification(
-          title: '🎉 Bid Accepted!',
+          title: 'Bid Accepted',
           body: 'Your bid was accepted.',
           type: 'bid',
           data: d);
-      showSnack(context, '🎉 Your bid was accepted!', ok: true);
+      showSnack(context, 'Your bid was accepted.', ok: true);
     });
 
     SocketService().on('new_bid', (d) {
       if (!mounted) return;
       final name = d['seekerName'] ?? 'Someone';
       _notifs.addNotification(
-          title: '📩 New Bid',
+          title: 'New Bid',
           body: '$name placed a bid on your job',
           type: 'bid',
           data: d);
@@ -73,7 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       if (!mounted) return;
       final name = data['seekerName'] ?? 'Someone';
       _notifs.addNotification(
-          title: '🔄 Counter Offer',
+          title: 'Counter Offer',
           body: '$name sent a counter offer',
           type: 'offer',
           data: data);
@@ -83,7 +83,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     SocketService().on('job_relisted', (d) {
       if (!mounted) return;
       _notifs.addNotification(
-          title: '🔄 Job Re-listed',
+          title: 'Job Re-listed',
           body: 'A job was re-listed. You can bid again!',
           type: 'job',
           data: d);
@@ -95,7 +95,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       final revieweeId = d['revieweeId'] as int?;
       if (jobId != null && revieweeId != null) {
         _notifs.addNotification(
-            title: '✅ Job Completed',
+            title: 'Job Completed',
             body: 'Please leave a review.',
             type: 'review',
             data: d);
@@ -110,32 +110,31 @@ class _DashboardScreenState extends State<DashboardScreen>
     SocketService().on('counter_bid_accepted', (d) {
       if (!mounted) return;
       _notifs.addNotification(
-          title: '✅ Counter Offer Accepted',
+          title: 'Counter Offer Accepted',
           body: 'Your counter offer was accepted! Job is now active.',
           type: 'offer',
           data: d);
-      showSnack(context, '✅ Counter offer accepted!', ok: true);
+      showSnack(context, 'Counter offer accepted.', ok: true);
       _load();
     });
 
     SocketService().on('counter_bid_rejected', (d) {
       if (!mounted) return;
       _notifs.addNotification(
-          title: '❌ Counter Offer Rejected',
+          title: 'Counter Offer Rejected',
           body: 'Your counter offer was rejected.',
           type: 'offer',
           data: d);
-      showSnack(context, '❌ Counter offer rejected.', err: true);
+      showSnack(context, 'Counter offer rejected.', err: true);
     });
 
     SocketService().on('message_received', (d) {
       if (!mounted) return;
       final senderId = d['senderId'] as int?;
-      final jobId = d['jobId'] as int?;
       final message = d['message'] as String? ?? 'You received a message';
 
       _notifs.addNotification(
-          title: '💬 New Message',
+          title: 'New Message',
           body:
               message.length > 50 ? '${message.substring(0, 50)}...' : message,
           type: 'chat',
@@ -149,7 +148,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     SocketService().on('job_status_updated', (d) {
       if (!mounted) return;
       _notifs.addNotification(
-          title: '📊 Job Status Updated',
+          title: 'Job Status Updated',
           body: 'Job progress has been updated',
           type: 'status',
           data: d);
@@ -173,10 +172,9 @@ class _DashboardScreenState extends State<DashboardScreen>
           Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                  color: Colors.amber.shade100,
+                  color: kPrimaryLime.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(12)),
-              child:
-                  Icon(Icons.swap_horiz_rounded, color: Colors.amber.shade700)),
+              child: const Icon(Icons.swap_horiz_rounded, color: kBlack)),
           const SizedBox(width: 12),
           const Text('Counter Offer!',
               style: TextStyle(fontWeight: FontWeight.w900)),
@@ -187,9 +185,9 @@ class _DashboardScreenState extends State<DashboardScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-                color: Colors.amber.shade50,
+                color: kPrimaryLime.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.amber.shade200)),
+                border: Border.all(color: kPrimaryLime.withValues(alpha: 0.5))),
             child: Column(children: [
               Text('Previous: Rs. $previousPrice',
                   style: const TextStyle(
@@ -199,12 +197,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                   style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w900,
-                      color: kGreen)),
+                      color: kBlack)),
             ]),
           ),
           if (data['message'] != null) ...[
             const SizedBox(height: 12),
-            Text('💬 "${data['message']}"',
+            Text('Message: "${data['message']}"',
                 style: TextStyle(
                     fontStyle: FontStyle.italic, color: Colors.grey.shade600)),
           ],
@@ -227,8 +225,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 try {
                   await _api.acceptCounterBid(jobId, bidId);
                   if (mounted) {
-                    showSnack(context, '✅ Accepted! Tracking started.',
-                        ok: true);
+                    showSnack(context, 'Accepted. Tracking started.', ok: true);
                     Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -239,7 +236,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 }
               },
               style: ElevatedButton.styleFrom(
-                  backgroundColor: kGreen, foregroundColor: kWhite),
+                  backgroundColor: kBlack, foregroundColor: kWhite),
               child: const Text('Accept',
                   style: TextStyle(fontWeight: FontWeight.w800))),
         ],
@@ -485,10 +482,13 @@ class _DashboardScreenState extends State<DashboardScreen>
     final area = _user?['area'] as String? ?? '';
     final city = _user?['city'] as String? ?? '';
     final location = area.isNotEmpty && city.isNotEmpty ? '$area, $city' : city;
+    final displayLocation = location.isNotEmpty
+        ? location
+        : (_user?['country'] ?? 'Location not set');
 
     return CustomScrollView(slivers: [
       SliverAppBar(
-        expandedHeight: 260,
+        expandedHeight: 290,
         pinned: true,
         backgroundColor: kBlack,
         automaticallyImplyLeading: false,
@@ -502,82 +502,129 @@ class _DashboardScreenState extends State<DashboardScreen>
                   .then((_) => _load())),
         ],
         flexibleSpace: FlexibleSpaceBar(
-          background: Stack(children: [
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                    colors: [Color(0xFF0D0D0D), Color(0xFF1A1A2E)],
+          background: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF0D0D0D), Color(0xFF232323)],
                     begin: Alignment.topLeft,
-                    end: Alignment.bottomRight),
+                    end: Alignment.bottomRight,
+                  ),
+                ),
               ),
-            ),
-            Positioned(
-                top: -30,
-                right: -30,
+              // Decorative circles
+              Positioned(
+                top: -40,
+                right: -20,
                 child: Container(
-                    width: 160,
-                    height: 160,
-                    decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color:
-                            const Color(0xFFF9F77E).withValues(alpha: 0.06)))),
-            Positioned(
-                bottom: 0,
-                left: -20,
+                  width: 180,
+                  height: 180,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFFF9F77E).withValues(alpha: 0.08),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: -50,
+                left: -30,
                 child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: kPurple.withValues(alpha: 0.08)))),
-            Center(
-              child: Column(
+                  width: 140,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: kWhite.withValues(alpha: 0.04),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 80,
+                right: 20,
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: kPrimaryLime.withValues(alpha: 0.1),
+                  ),
+                ),
+              ),
+              // Content
+              Positioned(
+                left: 20,
+                right: 20,
+                top: 50,
+                bottom: 16,
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 60),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _user?['fullName'] ?? '',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    color: kWhite,
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w900),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        buildTag(
+                            isPoster ? 'EMPLOYER' : 'WORKER', kPrimaryLime),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
                     Container(
-                      width: 90,
-                      height: 90,
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                            colors: [Color(0xFFF9F77E), Color(0xFFE8E660)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight),
-                        boxShadow: [
-                          BoxShadow(
-                              color: const Color(0xFFF9F77E)
-                                  .withValues(alpha: 0.4),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8))
+                        color: kWhite.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: kPrimaryLime.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.location_on_rounded,
+                              color: kPrimaryLime, size: 16),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              displayLocation,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  color: kWhite,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                          ),
                         ],
                       ),
-                      child: Center(
-                          child: Text(initial,
-                              style: const TextStyle(
-                                  color: kBlack,
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.w900))),
                     ),
-                    const SizedBox(height: 12),
-                    Text(_user?['fullName'] ?? '',
-                        style: const TextStyle(
-                            color: kWhite,
-                            fontSize: 19,
-                            fontWeight: FontWeight.w800)),
-                    const SizedBox(height: 6),
-                    buildTag(isPoster ? 'EMPLOYER' : 'WORKER',
-                        isPoster ? kPurple : const Color(0xFFF9F77E)),
-                  ]),
-            ),
-          ]),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       SliverToBoxAdapter(
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(children: [
-            // Switch role card
             GestureDetector(
               onTap: _switching ? null : _switchRole,
               child: AnimatedContainer(
@@ -585,7 +632,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   gradient: isPoster
-                      ? const LinearGradient(colors: [kPurple, kPurpleLight])
+                      ? const LinearGradient(
+                          colors: [kBlack, Color(0xFF2A2A2A)])
                       : const LinearGradient(
                           colors: [Color(0xFFF9F77E), Color(0xFFE8E660)]),
                   borderRadius: BorderRadius.circular(18),
@@ -612,7 +660,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                             style: TextStyle(
                                 color: isPoster
                                     ? kWhite.withValues(alpha: 0.7)
-                                    : kBlack.withValues(alpha: 0.6),
+                                    : kBlack.withValues(alpha: 0.7),
                                 fontSize: 11)),
                       ])),
                   _switching
@@ -628,7 +676,6 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
             ),
             const SizedBox(height: 16),
-            // Ratings row
             Row(children: [
               Expanded(child: _ratingCard('As Worker', wRating, wCount)),
               const SizedBox(width: 12),
@@ -649,13 +696,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                   _user?['phoneNumber'] ?? '—', kBlue),
               Divider(height: 24, color: kDivider),
               _infoRow(Icons.location_on_rounded, 'Location',
-                  location.isNotEmpty ? location : 'Not set', kPurple),
+                  location.isNotEmpty ? location : 'Not set', kPrimaryLime),
               Divider(height: 24, color: kDivider),
               _infoRow(Icons.flag_rounded, 'Country',
-                  _user?['country'] ?? 'Not set', kGreen),
+                  _user?['country'] ?? 'Not set', kBlack),
             ])),
             const SizedBox(height: 20),
-            // Settings button
             GestureDetector(
               onTap: () => Navigator.push(
                   context,
@@ -728,9 +774,14 @@ class _DashboardScreenState extends State<DashboardScreen>
             child: Icon(icon, color: color, size: 18)),
         const SizedBox(width: 14),
         Text(label, style: const TextStyle(color: kGrey, fontSize: 13)),
-        const Spacer(),
-        Text(value,
-            style: const TextStyle(
-                fontWeight: FontWeight.w700, fontSize: 13, color: kBlack)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(value,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                  fontWeight: FontWeight.w700, fontSize: 13, color: kBlack)),
+        ),
       ]);
 }

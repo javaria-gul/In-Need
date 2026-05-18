@@ -321,16 +321,14 @@ class _SignupScreenState extends State<SignupScreen> {
             child: LinearProgressIndicator(
               value: _strength.percent / 100,
               backgroundColor: Colors.white10,
-              color: _strength.percent > 70
-                  ? Colors.greenAccent
-                  : Colors.orangeAccent,
+              color: _strength.percent > 70 ? kPrimaryLime : kBlack,
               minHeight: 6,
             ),
           ),
           const SizedBox(height: 8),
           Text(_strength.label,
-              style: const TextStyle(
-                  color: Colors.white70,
+              style: TextStyle(
+                  color: _strength.percent > 70 ? kPrimaryLime : Colors.white70,
                   fontSize: 11,
                   fontWeight: FontWeight.bold)),
         ],
@@ -345,11 +343,11 @@ class _SignupScreenState extends State<SignupScreen> {
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         decoration: BoxDecoration(
           color: _lat != null
-              ? Colors.green.withValues(alpha: 0.1)
+              ? kPrimaryLime.withValues(alpha: 0.12)
               : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(
-              color: _lat != null ? Colors.greenAccent : Colors.white10),
+          border:
+              Border.all(color: _lat != null ? kPrimaryLime : Colors.white10),
         ),
         child: Row(
           children: [
@@ -360,7 +358,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     child: CircularProgressIndicator(
                         strokeWidth: 2, color: splashLime))
                 : Icon(_lat != null ? Icons.location_on : Icons.my_location,
-                    color: _lat != null ? Colors.greenAccent : splashLime),
+                    color: _lat != null ? kPrimaryLime : splashLime),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -371,14 +369,14 @@ class _SignupScreenState extends State<SignupScreen> {
                           ? 'Location Captured ✓'
                           : 'Tap to capture location',
                       style: TextStyle(
-                          color: _lat != null ? Colors.greenAccent : Colors.white70,
+                          color: _lat != null ? kPrimaryLime : Colors.white70,
                           fontSize: 13,
                           fontWeight: FontWeight.w600)),
                   if (_lat != null)
                     Text(
                       'Area & city will be auto-detected',
                       style: TextStyle(
-                          color: Colors.greenAccent.withValues(alpha: 0.7),
+                          color: kPrimaryLime.withValues(alpha: 0.7),
                           fontSize: 10),
                     ),
                 ],

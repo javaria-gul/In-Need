@@ -1,8 +1,8 @@
 import {
   Controller, Post, Get, Param, Body, UseGuards,
-  Request, ParseIntPipe, UseInterceptors, UploadedFiles,
+  Request, ParseIntPipe, UseInterceptors, UploadedFiles, BadRequestException,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
@@ -21,31 +21,41 @@ export class ReviewsController {
 
   @Post()
   @UseInterceptors(
-    FilesInterceptor('images', 2, { storage: memoryStorage() }),
+    FileFieldsInterceptor(
+      [
+        { name: 'beforeImage', maxCount: 1 },
+        { name: 'afterImage', maxCount: 1 },
+      ],
+      { storage: memoryStorage() },
+    ),
   )
   async submit(
     @Request() req: any,
     @Body() dto: CreateReviewDto,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles()
+    files: {
+      beforeImage?: Express.Multer.File[];
+      afterImage?: Express.Multer.File[];
+    },
   ) {
-    // Upload images to Cloudinary if provided
-    let beforeImageUrl: string | undefined;
-    let afterImageUrl: string | undefined;
+    const beforeFile = files.beforeImage?.[0];
+    const afterFile = files.afterImage?.[0];
 
-    if (files && files.length > 0) {
-      // Map files by field name or by order
-      for (const file of files) {
-        const url = await this.cloudinaryService.uploadImage(file);
-        // First file = before, second file = after
-        if (!beforeImageUrl) {
-          beforeImageUrl = url;
-        } else if (!afterImageUrl) {
-          afterImageUrl = url;
-        }
-      }
+    if (!beforeFile || !afterFile) {
+      throw new BadRequestException('Before and after images are required');
     }
 
-    return this.svc.submitReview(req.user.userId, dto, beforeImageUrl, afterImageUrl);
+    const [beforeImageUrl, afterImageUrl] = await Promise.all([
+      this.cloudinaryService.uploadImage(beforeFile),
+      this.cloudinaryService.uploadImage(afterFile),
+    ]);
+
+    return this.svc.submitReview(
+      req.user.userId,
+      dto,
+      beforeImageUrl,
+      afterImageUrl,
+    );
   }
 
   @Get('check/:jobId')

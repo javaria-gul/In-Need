@@ -191,7 +191,7 @@ class ApiService {
         throw Exception('Failed to mark tutorial as seen: ${res.statusCode}');
       }
     } catch (e) {
-      debugPrint('⚠️ Error marking tutorial as seen: $e');
+      debugPrint('Warning: Error marking tutorial as seen: $e');
       rethrow;
     }
   }
@@ -290,7 +290,7 @@ class ApiService {
   }
 
   // ============================================================
-  // ✅ NEW METHODS FOR COUNTER-OFFER (ADD THESE)
+  // NEW METHODS FOR COUNTER-OFFER
   // ============================================================
 
   // Poster accepts counter-offer from seeker
@@ -354,9 +354,10 @@ class ApiService {
 
   // ─── REVIEWS ──────────────────────────────────────────────────────────────
   Future<Map<String, dynamic>> submitReview(
-    Map<String, dynamic> data,
-    List<List<int>>? imageBytes,
-  ) async {
+    Map<String, dynamic> data, {
+    required List<int> beforeImageBytes,
+    required List<int> afterImageBytes,
+  }) async {
     // Send as multipart form data to match backend expectation
     final request = http.MultipartRequest(
       'POST',
@@ -383,18 +384,20 @@ class ApiService {
       request.fields['comment'] = data['comment'].toString();
     }
 
-    // Add image files if provided
-    if (imageBytes != null && imageBytes.isNotEmpty) {
-      for (int i = 0; i < imageBytes.length; i++) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'images',
-            imageBytes[i],
-            filename: 'review_image_$i.jpg',
-          ),
-        );
-      }
-    }
+    request.files.add(
+      http.MultipartFile.fromBytes(
+        'beforeImage',
+        beforeImageBytes,
+        filename: 'review_before.jpg',
+      ),
+    );
+    request.files.add(
+      http.MultipartFile.fromBytes(
+        'afterImage',
+        afterImageBytes,
+        filename: 'review_after.jpg',
+      ),
+    );
 
     final streamed = await request.send().timeout(const Duration(seconds: 30));
     final response = await http.Response.fromStream(streamed);

@@ -29,6 +29,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   static const Color _kWhite = Colors.white;
   static const Color _kPinkBg = Color.fromARGB(255, 209, 69, 181);
   static const Color _kBeigeBg = Color(0xFFFDFBF7);
+  static const Color _kPanelSurface = Color(0xFF262118);
+  static const Color _kPanelAccent = Color(0xFFF1EF7E);
 
   @override
   void initState() {
@@ -75,7 +77,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         await precacheImage(AssetImage(url), context);
       }
     } catch (e) {
-      debugPrint('⚠️ Error pre-caching images: $e');
+      debugPrint('Warning: Error pre-caching images: $e');
     }
   }
 
@@ -96,7 +98,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       try {
         await ApiService().markTutorialSeen();
       } catch (e) {
-        debugPrint('⚠️ Failed to sync tutorial status with backend: $e');
+        debugPrint('Warning: Failed to sync tutorial status with backend: $e');
         // Continue anyway - local storage is already set
       }
 
@@ -105,7 +107,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         Navigator.pushReplacementNamed(context, '/dashboard');
       }
     } catch (e) {
-      debugPrint('❌ Error in _finish: $e');
+      debugPrint('Error in _finish: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -142,25 +144,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             ),
           ),
 
-          // 2. BACKDROP GRAPHICAL CONNECTORS (Hidden - clean design)
-          if (false)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: AnimatedBuilder(
-                  animation: _pageCtrl,
-                  builder: (context, child) {
-                    return CustomPaint(
-                      painter: ConnectorLinePainter(
-                        scrollOffset: _scrollOffset,
-                        lineColor: _kCharcoal.withValues(alpha: 0.20),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-
-          // 3. FLUID DECORATIVE BADGES (Fade out as we move to screen 3)
+          // 2. FLUID DECORATIVE BADGES (Fade out as we move to screen 3)
           Opacity(
             opacity: (1.0 - (_scrollOffset - 1.0).clamp(0.0, 1.0)),
             child: Stack(
@@ -168,17 +152,17 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             ),
           ),
 
-          // 4. CHARACTERS ORIENTATION PARALLAX CANVAS (Screens 1 & 2)
+          // 3. CHARACTERS ORIENTATION PARALLAX CANVAS (Screens 1 & 2)
           if (_scrollOffset < 1.5)
             Positioned.fill(
               child: IgnorePointer(
                 child: Stack(
                   children: [
-                    // Role 1: Poster - UP TO AVOID SWITCH ELEMENT
+                    // ROLE 1: Poster - UP TO AVOID SWITCH ELEMENT
                     Positioned(
-                      right: size.width * 0.14 +
+                      right: size.width * 0.18 +
                           (_scrollOffset * size.width * 0.6),
-                      bottom: size.height * 0.19,
+                      bottom: size.height * 0.17,
                       child: Opacity(
                         opacity: (1.0 - _scrollOffset).clamp(0.0, 1.0),
                         child: Image.asset(
@@ -190,9 +174,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     ),
                     // Role 2: Seeker - UP TO AVOID SWITCH ELEMENT
                     Positioned(
-                      left: size.width * 0.01 +
+                      left: size.width * 0.00 +
                           ((1.0 - _scrollOffset) * size.width * 0.6),
-                      bottom: size.height * 0.16,
+                      bottom: size.height * 0.13,
                       child: Opacity(
                         opacity: (_scrollOffset < 1.0
                                 ? _scrollOffset
@@ -210,9 +194,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               ),
             ),
 
-          // 5. SCREEN 3: MAP & ULTRA ANIMATED GIGS CANVAS (PUSHED UPWARDS)
+          // 4. SCREEN 3: MAP & ULTRA ANIMATED GIGS CANVAS (PUSHED UPWARDS)
           Positioned(
-            bottom: size.height * 0.15,
+            bottom: size.height * 0.11,
             left: 0,
             right: 0,
             height: size.height * 0.65,
@@ -233,7 +217,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     ),
                     // Animated floating components stack
                     Positioned(
-                      bottom: size.height * 0.15,
+                      bottom: size.height * 0.11,
                       left: 0,
                       right: 0,
                       height: size.height * 0.47,
@@ -245,7 +229,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             ),
           ),
 
-          // 6. INTERFACE STRATA AND SLIDE-IN CONTENT PANELS
+          // 5. INTERFACE STRATA AND SLIDE-IN CONTENT PANELS
           SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -298,7 +282,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             "Post jobs, set location,time, and budget.",
                         features: [
                           "Verified Taskers",
-                          "Secure Payments",
                           "Instant Location Matching"
                         ],
                         textOnLeft: true,
@@ -310,7 +293,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         description:
                             "Create your profile, browse jobs, and earn money.",
                         features: [
-                          "Verified Daily Wages",
                           "Flexible Working Hours",
                           "Direct Client Direct Chat"
                         ],
@@ -495,10 +477,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 width: size.width > 600 ? size.width * 0.70 : size.width * 0.85,
                 padding: EdgeInsets.all(size.width > 600 ? 16 : 14),
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 51, 45, 221)
-                      .withValues(alpha: 0.95),
+                  color: _kPanelSurface.withValues(alpha: 0.95),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: _kWhite, width: 2),
+                  border: Border.all(
+                      color: _kPanelAccent.withValues(alpha: 0.7), width: 1.6),
                   boxShadow: const [
                     BoxShadow(color: _kCharcoal, offset: Offset(3, 3)),
                   ],
@@ -509,7 +491,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     Text(
                       title,
                       style: TextStyle(
-                        color: _kWhite,
+                        color: _kPanelAccent,
                         fontSize: size.width > 600 ? 19 : 17,
                         fontWeight: FontWeight.w900,
                       ),
@@ -518,7 +500,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     Text(
                       description,
                       style: TextStyle(
-                        color: _kWhite.withValues(alpha: 0.75),
+                        color: _kWhite.withValues(alpha: 0.82),
                         fontSize: size.width > 600 ? 14 : 12,
                         fontWeight: FontWeight.w500,
                         height: 1.3,
@@ -540,8 +522,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       vertical: size.width > 600 ? 6 : 5,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 108, 232, 178)
-                          .withValues(alpha: 0.80),
+                      color: _kPanelAccent.withValues(alpha: 0.92),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: _kCharcoal, width: 1.2),
                     ),
@@ -614,12 +595,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       shadows: [
                         Shadow(
                             offset: const Offset(1, 1),
-                            color:
-                                const Color(0xFF6CE8B2).withValues(alpha: 0.8)),
+                            color: _kPanelAccent.withValues(alpha: 0.8)),
                         Shadow(
                             offset: const Offset(-1, -1),
-                            color:
-                                const Color(0xFF6CE8B2).withValues(alpha: 0.8)),
+                            color: _kPanelAccent.withValues(alpha: 0.8)),
                         Shadow(
                             offset: const Offset(2, 2),
                             color: _kCharcoal.withValues(alpha: 0.15)),
@@ -633,9 +612,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 width: size.width * 0.90,
                 padding: EdgeInsets.all(size.width > 600 ? 14 : 12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6CE8B2).withValues(alpha: 0.95),
+                  color: _kPanelSurface.withValues(alpha: 0.95),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: _kCharcoal, width: 2),
+                  border: Border.all(
+                      color: _kPanelAccent.withValues(alpha: 0.7), width: 1.6),
                   boxShadow: const [
                     BoxShadow(color: _kCharcoal, offset: Offset(3, 3)),
                   ],
@@ -644,7 +624,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   description,
                   textAlign: TextAlign.left,
                   style: TextStyle(
-                    color: _kCharcoal,
+                    color: _kWhite.withValues(alpha: 0.84),
                     fontSize: size.width > 600 ? 13 : 11.5,
                     fontWeight: FontWeight.w700,
                     height: 1.45,
@@ -725,7 +705,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 108, 232, 178).withValues(alpha: 0.80),
+        color: _kPanelAccent.withValues(alpha: 0.86),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: _kCharcoal, width: 2),
         boxShadow: const [
@@ -752,8 +732,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         shape: BoxShape.circle,
         gradient: const LinearGradient(
           colors: [
-            Color.fromARGB(255, 108, 232, 178),
-            Color.fromARGB(255, 243, 164, 226),
+            Color.fromARGB(255, 243, 239, 126),
+            Color.fromARGB(255, 241, 218, 102),
             _kYellowRestored
           ],
           begin: Alignment.topLeft,
@@ -868,27 +848,27 @@ class BackgroundPatternPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
 
-    // ✅ ALL SCREENS: White background base
+    // ALL SCREENS: White background base
     paint.color = Colors.white;
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
 
     // DIFFERENT DECORATIVE ELEMENTS PER SCREEN WITH PARALLAX ANIMATION
 
-    // === SCREEN 1 (0.0 - 1.0): Cyan & Purple with parallax ===
+    // === SCREEN 1 (0.0 - 1.0): Yellow & charcoal with parallax ===
     if (scrollOffset < 1.0) {
       double screenProgress = scrollOffset.clamp(0.0, 1.0);
       double parallaxOffset = screenProgress * 35;
 
-      // Top-left: Cyan circle with parallax
-      paint.color = const Color(0xFF00BCD4).withValues(alpha: 0.22);
+      // Top-left accent circle with parallax
+      paint.color = const Color(0xFFF1EF7E).withValues(alpha: 0.22);
       canvas.drawCircle(
         Offset(size.width * 0.08 - parallaxOffset, size.height * 0.18),
         50,
         paint,
       );
 
-      // Mid-right: Purple circle with parallax
-      paint.color = const Color(0xFF9C27B0).withValues(alpha: 0.20);
+      // Mid-right charcoal circle with parallax
+      paint.color = const Color(0xFF1A1A1A).withValues(alpha: 0.10);
       canvas.drawCircle(
         Offset(size.width * 0.92 + parallaxOffset, size.height * 0.65),
         48,
@@ -896,29 +876,42 @@ class BackgroundPatternPainter extends CustomPainter {
       );
 
       // Extra elements for screen 1
-      paint.color = const Color(0xFF2196F3).withValues(alpha: 0.15);
+      paint.color = const Color(0xFFE8E57C).withValues(alpha: 0.16);
       canvas.drawCircle(
           Offset(size.width * 0.15, size.height * 0.45), 35, paint);
 
-      paint.color = const Color(0xFFBA68C8).withValues(alpha: 0.14);
+      paint.color = const Color(0xFF2B2B2B).withValues(alpha: 0.08);
       canvas.drawCircle(
           Offset(size.width * 0.80, size.height * 0.35), 40, paint);
+
+      paint.color = const Color(0xFFF1EF7E).withValues(alpha: 0.11);
+      canvas.drawCircle(
+          Offset(size.width * 0.54, size.height * 0.14), 26, paint);
+
+      paint.color = const Color(0xFF1A1A1A).withValues(alpha: 0.06);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(size.width * 0.18, size.height * 0.72, 92, 18),
+          const Radius.circular(12),
+        ),
+        paint,
+      );
     }
-    // === SCREEN 2 (1.0 - 2.0): Orange & Green with parallax ===
+    // === SCREEN 2 (1.0 - 2.0): Yellow & charcoal with parallax ===
     else if (scrollOffset >= 1.0 && scrollOffset < 2.0) {
       double screenProgress = (scrollOffset - 1.0).clamp(0.0, 1.0);
       double parallaxOffset = screenProgress * 35;
 
-      // Top-left: Orange circle with parallax
-      paint.color = const Color(0xFFFF9800).withValues(alpha: 0.21);
+      // Top-left yellow circle with parallax
+      paint.color = const Color(0xFFF1EF7E).withValues(alpha: 0.20);
       canvas.drawCircle(
         Offset(size.width * 0.10 - parallaxOffset, size.height * 0.22),
         52,
         paint,
       );
 
-      // Bottom-right: Green circle with parallax
-      paint.color = const Color(0xFF4CAF50).withValues(alpha: 0.19);
+      // Bottom-right charcoal circle with parallax
+      paint.color = const Color(0xFF1A1A1A).withValues(alpha: 0.10);
       canvas.drawCircle(
         Offset(size.width * 0.90 + parallaxOffset, size.height * 0.72),
         50,
@@ -926,29 +919,42 @@ class BackgroundPatternPainter extends CustomPainter {
       );
 
       // Extra elements for screen 2
-      paint.color = const Color(0xFFFFB74D).withValues(alpha: 0.15);
+      paint.color = const Color(0xFFE8E57C).withValues(alpha: 0.14);
       canvas.drawCircle(
           Offset(size.width * 0.20, size.height * 0.55), 38, paint);
 
-      paint.color = const Color(0xFF66BB6A).withValues(alpha: 0.14);
+      paint.color = const Color(0xFF2F2F2F).withValues(alpha: 0.08);
       canvas.drawCircle(
           Offset(size.width * 0.75, size.height * 0.40), 42, paint);
+
+      paint.color = const Color(0xFFF1EF7E).withValues(alpha: 0.10);
+      canvas.drawCircle(
+          Offset(size.width * 0.48, size.height * 0.16), 28, paint);
+
+      paint.color = const Color(0xFF1A1A1A).withValues(alpha: 0.06);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(size.width * 0.60, size.height * 0.74, 88, 18),
+          const Radius.circular(12),
+        ),
+        paint,
+      );
     }
-    // === SCREEN 3 (2.0+): Pink & Red with parallax ===
+    // === SCREEN 3 (2.0+): Yellow & charcoal with parallax ===
     else {
       double screenProgress = (scrollOffset - 2.0).clamp(0.0, 1.0);
       double parallaxOffset = screenProgress * 35;
 
-      // Top-left: Pink circle with parallax
-      paint.color = const Color(0xFFE91E63).withValues(alpha: 0.20);
+      // Top-left yellow circle with parallax
+      paint.color = const Color(0xFFF1EF7E).withValues(alpha: 0.20);
       canvas.drawCircle(
         Offset(size.width * 0.12 - parallaxOffset, size.height * 0.20),
         48,
         paint,
       );
 
-      // Bottom-right: Red circle with parallax
-      paint.color = const Color(0xFFF44336).withValues(alpha: 0.21);
+      // Bottom-right charcoal circle with parallax
+      paint.color = const Color(0xFF1A1A1A).withValues(alpha: 0.10);
       canvas.drawCircle(
         Offset(size.width * 0.88 + parallaxOffset, size.height * 0.68),
         52,
@@ -956,13 +962,26 @@ class BackgroundPatternPainter extends CustomPainter {
       );
 
       // Extra elements for screen 3
-      paint.color = const Color(0xFFEC407A).withValues(alpha: 0.15);
+      paint.color = const Color(0xFFE8E57C).withValues(alpha: 0.14);
       canvas.drawCircle(
           Offset(size.width * 0.18, size.height * 0.50), 36, paint);
 
-      paint.color = const Color(0xFFEF5350).withValues(alpha: 0.14);
+      paint.color = const Color(0xFF2F2F2F).withValues(alpha: 0.08);
       canvas.drawCircle(
           Offset(size.width * 0.82, size.height * 0.30), 44, paint);
+
+      paint.color = const Color(0xFFF1EF7E).withValues(alpha: 0.10);
+      canvas.drawCircle(
+          Offset(size.width * 0.52, size.height * 0.12), 28, paint);
+
+      paint.color = const Color(0xFF1A1A1A).withValues(alpha: 0.06);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(size.width * 0.22, size.height * 0.70, 92, 18),
+          const Radius.circular(12),
+        ),
+        paint,
+      );
     }
   }
 

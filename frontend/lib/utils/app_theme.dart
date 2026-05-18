@@ -27,12 +27,19 @@ const kDarkBlue2 = Color(0xFFFEFD99); // Dark lime 2 (was blue)
 const kDarkBlue3 = Color(0xFFFEFD99); // Dark lime 3 (was blue)
 
 // Vibrant Color Palette
-const kPurple = Color(0xFF5856D6); // Purple
-const kPurpleLight = Color(0xFF9B87F5); // Light purple
-const kPink = Color(0xFFAF52DE); // Pink
-const kGreen = Color(0xFF34C759); // Green
-const kTealGreen = Color(0xFF52D9AD); // Teal green
-const kOrange = Color(0xFFFF9500); // Orange
+const kPurple = Color(0xFF1F1F1F); // Charcoal accent
+const kPurpleLight = Color(0xFF333333); // Soft charcoal accent
+const kPink = Color(0xFFF1EF7E); // Theme yellow accent
+const kGreen = Color(0xFF232323); // Dark accent (replacing green)
+const kTealGreen = Color(0xFF3A3A3A); // Dark secondary accent
+const kOrange = Color(0xFFCFCB61); // Warm yellow accent
+
+// Validation / success accent for the yellow-black theme
+const kValidationGrad = LinearGradient(
+  colors: [kPrimaryLime, kBlack],
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+);
 
 // Specific Colors for Multi-color Job Cards (Extracted from Image)
 const List<Color> kCardColors = [
@@ -44,10 +51,10 @@ const List<Color> kCardColors = [
 // Job Card Colors Palette
 const List<Color> kJobCardColors = [
   kBrightBlue, // Blue
-  kPurple, // Purple
-  kPink, // Pink
-  kOrange, // Orange
-  kGreen, // Green
+  kOrange,
+  kPink,
+  kPurple,
+  kGreen,
 ];
 
 // Gradients (Strictly Image Based)
@@ -101,7 +108,7 @@ const kCurveGrad = LinearGradient(
 );
 
 const kCurveGradPurple = LinearGradient(
-  colors: [Color(0xFFFEFD99), kPurpleLight],
+  colors: [Color(0xFFFEFD99), Color(0xFFE8E57C)],
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
 );
@@ -125,7 +132,7 @@ const kBlueShadow = [
 
 const kGreenShadow = [
   BoxShadow(
-    color: Color(0x1A34C759),
+    color: Color(0x1A0D0D0D),
     blurRadius: 20,
     offset: Offset(0, 10),
   ),
@@ -141,9 +148,9 @@ void showSnack(BuildContext context, String message,
     SnackBar(
       content: Text(
         message,
-        style: TextStyle(color: err || ok ? kWhite : kBlack),
+        style: TextStyle(color: err ? kWhite : kBlack),
       ),
-      backgroundColor: err ? kRed : (ok ? kBlack : kPrimaryLime),
+      backgroundColor: err ? kRed : kPrimaryLime,
       behavior: SnackBarBehavior.floating,
       margin: const EdgeInsets.all(16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

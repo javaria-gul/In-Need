@@ -187,7 +187,7 @@ class _PostJobScreenState extends State<PostJobScreen> {
               Column(children: [
                 Row(children: [
                   Expanded(
-                      child: _chip('🔥 Urgent', 'urgent', _urgency,
+                      child: _chip('Urgent', 'urgent', _urgency,
                           (v) => setState(() => _urgency = v))),
                   const SizedBox(width: 8),
                   Expanded(
@@ -240,7 +240,8 @@ class _PostJobScreenState extends State<PostJobScreen> {
                           width: 52,
                           height: 52,
                           decoration: BoxDecoration(
-                            gradient: _lat != null ? kGreenGrad : kBlueGrad,
+                            gradient:
+                                _lat != null ? kValidationGrad : kBlueGrad,
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: _locLoading

@@ -7,7 +7,8 @@ class PosterHomeScreen extends StatefulWidget {
   final Map<String, dynamic>? user;
   final VoidCallback onRefresh;
 
-  const PosterHomeScreen({super.key, required this.user, required this.onRefresh});
+  const PosterHomeScreen(
+      {super.key, required this.user, required this.onRefresh});
 
   @override
   State<PosterHomeScreen> createState() => _PosterHomeScreenState();
@@ -65,10 +66,10 @@ class _PosterHomeScreenState extends State<PosterHomeScreen> {
   Widget build(BuildContext context) {
     final user = widget.user;
     final fullName = user?['fullName'] as String? ?? '';
+    final initial = fullName.isNotEmpty ? fullName[0].toUpperCase() : 'A';
     final area = user?['area'] as String? ?? '';
     final city = user?['city'] as String? ?? '';
-    final location =
-        area.isNotEmpty && city.isNotEmpty ? '$area, $city' : city;
+    final location = area.isNotEmpty && city.isNotEmpty ? '$area, $city' : city;
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -89,49 +90,70 @@ class _PosterHomeScreenState extends State<PosterHomeScreen> {
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 color: kWhite,
-                padding: const EdgeInsets.fromLTRB(20, 50, 20, 10),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Hi, $fullName',
-                            style: const TextStyle(
-                                color: kBlack,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(children: [
-                            const Icon(Icons.location_on_rounded,
-                                color: kGrey, size: 14),
-                            const SizedBox(width: 4),
+                padding: const EdgeInsets.fromLTRB(18, 38, 18, 10),
+                child: Center(
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: kWhite,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: kShadow,
+                      border: Border.all(
+                          color: kPrimaryLime.withValues(alpha: 0.35)),
+                    ),
+                    child: Row(children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
                             Text(
-                              location.isNotEmpty ? location : 'Location not set',
-                              style: const TextStyle(color: kGrey, fontSize: 13),
+                              'Hi, $fullName',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  color: kBlack,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900),
                             ),
-                          ]),
-                        ],
+                            const SizedBox(height: 6),
+                            Row(children: [
+                              const Icon(Icons.location_on_rounded,
+                                  color: kGrey, size: 14),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  location.isNotEmpty
+                                      ? location
+                                      : 'Location not set',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      color: kGrey, fontSize: 13),
+                                ),
+                              ),
+                            ]),
+                          ],
+                        ),
                       ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF9F77E),
-                        borderRadius: BorderRadius.circular(12),
+                      const SizedBox(width: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF9F77E),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text('Employer',
+                            style: TextStyle(
+                                color: kBlack,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 12)),
                       ),
-                      child: const Text('Employer',
-                          style: TextStyle(
-                              color: kBlack,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 12)),
-                    ),
-                  ],
+                    ]),
+                  ),
                 ),
               ),
             ),
@@ -143,14 +165,14 @@ class _PosterHomeScreenState extends State<PosterHomeScreen> {
               child: Column(children: [
                 // Stats boxes
                 Row(children: [
-                  _statBox('Live', _liveCount.toString(),
-                      Icons.circle, kGreen, 'Active posts'),
+                  _statBox('Live', _liveCount.toString(), Icons.circle, kGreen,
+                      'Active posts'),
                   const SizedBox(width: 12),
                   _statBox('Offers', _offersCount.toString(),
                       Icons.swap_horiz_rounded, kOrange, 'Counter offers'),
                   const SizedBox(width: 12),
-                  _statBox('Total', _totalCount.toString(),
-                      Icons.work_rounded, kPurple, 'All posts'),
+                  _statBox('Total', _totalCount.toString(), Icons.work_rounded,
+                      kPurple, 'All posts'),
                 ]),
                 const SizedBox(height: 28),
                 // Live posts section
@@ -166,11 +188,11 @@ class _PosterHomeScreenState extends State<PosterHomeScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                            color: kGreen.withValues(alpha: 0.1),
+                            color: const Color(0xFFF9F77E),
                             borderRadius: BorderRadius.circular(20)),
                         child: Text('$_liveCount active',
                             style: const TextStyle(
-                                color: kGreen,
+                                color: kBlack,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700))),
                 ]),
@@ -194,31 +216,34 @@ class _PosterHomeScreenState extends State<PosterHomeScreen> {
     );
   }
 
-  Widget _statBox(String label, String val, IconData icon, Color color, String sub) {
+  Widget _statBox(
+      String label, String val, IconData icon, Color color, String sub) {
     return Expanded(
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: kWhite,
+          color: const Color(0xFFF9F77E),
           borderRadius: BorderRadius.circular(18),
           boxShadow: kShadow,
+          border: Border.all(color: kBlack, width: 1.6),
         ),
         child: Column(children: [
           Container(
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
+                color: const Color(0xFFF9F77E),
                 borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: color, size: 18),
+            child: Icon(icon, color: kBlack, size: 22),
           ),
           const SizedBox(height: 8),
           Text(val,
               style: const TextStyle(
                   fontSize: 22, fontWeight: FontWeight.w900, color: kBlack)),
           Text(label,
-              style: const TextStyle(color: kGrey, fontSize: 10, fontWeight: FontWeight.w600)),
+              style: const TextStyle(
+                  color: kBlack, fontSize: 10, fontWeight: FontWeight.w600)),
         ]),
       ),
     );
@@ -226,9 +251,12 @@ class _PosterHomeScreenState extends State<PosterHomeScreen> {
 
   Widget _postCard(Map<String, dynamic> job) {
     final title = job['title'] as String? ?? 'Untitled';
+    final description = (job['description'] as String?) ??
+        (job['details'] as String?) ??
+        (job['summary'] as String?) ??
+        'No description provided for this post.';
     final price = (job['price'] as num?)?.toDouble() ?? 0;
     final bids = (job['bids'] as List<dynamic>?) ?? [];
-    final status = job['status'] as String? ?? '';
     final exp = job['expiresAt'] != null
         ? DateTime.tryParse(job['expiresAt'].toString())
         : null;
@@ -237,20 +265,16 @@ class _PosterHomeScreenState extends State<PosterHomeScreen> {
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(
-            builder: (_) => BidsScreen(jobId: job['id'] as int)),
+        MaterialPageRoute(builder: (_) => BidsScreen(jobId: job['id'] as int)),
       ).then((_) => _loadData()),
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: kWhite,
+          color: kBlack,
           borderRadius: BorderRadius.circular(20),
           boxShadow: kShadow,
-          border: Border.all(
-              color: bids.isNotEmpty
-                  ? kOrange.withValues(alpha: 0.3)
-                  : kDivider),
+          border: Border.all(color: const Color(0xFFF9F77E), width: 1.3),
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
@@ -259,22 +283,22 @@ class _PosterHomeScreenState extends State<PosterHomeScreen> {
                   style: const TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 15,
-                      color: kBlack)),
+                      color: kWhite)),
             ),
             if (bids.isNotEmpty)
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                    color: kOrange.withValues(alpha: 0.12),
+                    color: const Color(0xFFF9F77E),
                     borderRadius: BorderRadius.circular(20)),
                 child: Row(children: [
                   const Icon(Icons.notifications_rounded,
-                      color: kOrange, size: 13),
+                      color: kBlack, size: 13),
                   const SizedBox(width: 4),
                   Text('${bids.length} offers',
                       style: const TextStyle(
-                          color: kOrange,
+                          color: kBlack,
                           fontSize: 11,
                           fontWeight: FontWeight.w700)),
                 ]),
@@ -282,37 +306,73 @@ class _PosterHomeScreenState extends State<PosterHomeScreen> {
           ]),
           const SizedBox(height: 8),
           Row(children: [
-            Icon(Icons.monetization_on_rounded, color: kGrey, size: 14),
+            const Icon(Icons.monetization_on_rounded,
+                color: Color(0xFFF9F77E), size: 14),
             const SizedBox(width: 4),
             Text('Rs. ${price.toStringAsFixed(0)}',
-                style: const TextStyle(color: kGrey, fontSize: 12)),
+                style: const TextStyle(color: kWhite, fontSize: 12)),
             const Spacer(),
             if (remaining != null && remaining.isNegative == false)
               Text(
                 _formatRemaining(remaining),
                 style: TextStyle(
-                    color: remaining.inHours < 1 ? kRed : kGrey,
+                    color: const Color(0xFFF9F77E),
                     fontSize: 11,
                     fontWeight: FontWeight.w600),
               ),
           ]),
           const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: kBlack.withValues(alpha: 0.32),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                  color: const Color(0xFFF9F77E).withValues(alpha: 0.6)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Description',
+                    style: TextStyle(
+                        color: Color(0xFFF9F77E),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800)),
+                const SizedBox(height: 6),
+                Text(
+                  description,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: kWhite,
+                    fontSize: 12,
+                    height: 1.35,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
           Row(children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                  color: kGreen.withValues(alpha: 0.1),
+                  color: const Color(0xFFF9F77E),
                   borderRadius: BorderRadius.circular(8)),
-              child: Text('LIVE',
-                  style: const TextStyle(
-                      color: kGreen,
+              child: const Text('LIVE',
+                  style: TextStyle(
+                      color: kBlack,
                       fontSize: 10,
                       fontWeight: FontWeight.w800)),
             ),
             const Spacer(),
             const Text('Tap to see offers →',
                 style: TextStyle(
-                    color: kGrey, fontSize: 11, fontWeight: FontWeight.w600)),
+                    color: Color(0xFFF9F77E),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600)),
           ]),
         ]),
       ),
@@ -347,8 +407,7 @@ class _PosterHomeScreenState extends State<PosterHomeScreen> {
           GestureDetector(
             onTap: () => Navigator.pushNamed(context, '/post-job'),
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               decoration: BoxDecoration(
                   color: const Color(0xFFF9F77E),
                   borderRadius: BorderRadius.circular(12)),

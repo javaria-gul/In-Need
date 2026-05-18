@@ -58,6 +58,8 @@ class _BidsScreenState extends State<BidsScreen> {
   bool _loading = true;
   int? _accepting;
 
+  static const Color _yellow = Color(0xFFF9F77E);
+
   @override
   void initState() {
     super.initState();
@@ -84,7 +86,7 @@ class _BidsScreenState extends State<BidsScreen> {
   void _handleBidUpdatedEvent(Map<String, dynamic> data) {
     final eventJobId = data['jobId'];
     if (eventJobId == widget.jobId && mounted) {
-      showSnack(context, '💰 Counter offer received! Check updated price',
+      showSnack(context, 'Counter offer received. Check updated price.',
           ok: true);
       _load();
     }
@@ -138,8 +140,10 @@ class _BidsScreenState extends State<BidsScreen> {
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: kWhite,
+          color: _yellow,
           borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: kBlack, width: 1.3),
+          boxShadow: kShadow,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -149,7 +153,7 @@ class _BidsScreenState extends State<BidsScreen> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: kDivider,
+                  color: kBlack,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -161,7 +165,7 @@ class _BidsScreenState extends State<BidsScreen> {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    gradient: kBlueGrad,
+                    color: kBlack,
                     shape: BoxShape.circle,
                   ),
                   child: Center(
@@ -199,14 +203,14 @@ class _BidsScreenState extends State<BidsScreen> {
                           const SizedBox(width: 4),
                           Text(
                             '${(seeker['workerRating'] ?? 0).toStringAsFixed(1)} (${seeker['workerRatingCount'] ?? 0} reviews)',
-                            style: const TextStyle(color: kGrey, fontSize: 12),
+                            style: const TextStyle(color: kBlack, fontSize: 12),
                           ),
                         ],
                       ),
                       if (seeker['city'] != null)
                         Text(
                           '📍 ${seeker['city']}',
-                          style: const TextStyle(color: kGrey, fontSize: 12),
+                          style: const TextStyle(color: kBlack, fontSize: 12),
                         ),
                     ],
                   ),
@@ -239,13 +243,13 @@ class _BidsScreenState extends State<BidsScreen> {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              gradient: kBlueGrad,
+                              color: kBlack,
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Text(
                               s.trim(),
                               style: const TextStyle(
-                                color: kWhite,
+                                color: _yellow,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -259,9 +263,7 @@ class _BidsScreenState extends State<BidsScreen> {
             GradBtn(
               text:
                   'ACCEPT THIS BID — Rs. ${bid.offeredPrice.toStringAsFixed(0)}',
-              gradient: const LinearGradient(
-                colors: [kGreen, kTealGreen],
-              ),
+              gradient: kValidationGrad,
               onTap: () {
                 Navigator.pop(context);
                 _accept(bid);
@@ -287,7 +289,7 @@ class _BidsScreenState extends State<BidsScreen> {
           ],
         ),
         body: _loading
-            ? const Center(child: CircularProgressIndicator(color: kBlue))
+            ? const Center(child: CircularProgressIndicator(color: kBlack))
             : Column(
                 children: [
                   if (_job != null) _jobHeader(),
@@ -302,9 +304,10 @@ class _BidsScreenState extends State<BidsScreen> {
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: kWhite,
+          color: _yellow,
           borderRadius: BorderRadius.circular(18),
           boxShadow: kShadow,
+          border: Border.all(color: kBlack, width: 1.3),
         ),
         child: Row(
           children: [
@@ -312,10 +315,10 @@ class _BidsScreenState extends State<BidsScreen> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                gradient: kBlueGrad,
+                color: kBlack,
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(Icons.work_rounded, color: kWhite),
+              child: const Icon(Icons.work_rounded, color: _yellow),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -332,14 +335,14 @@ class _BidsScreenState extends State<BidsScreen> {
                   ),
                   Text(
                     'Rs. ${(_job!['price'] as num?)?.toStringAsFixed(0) ?? '0'} · ${_job!['pricingType'] ?? 'fixed'}',
-                    style: const TextStyle(color: kGrey, fontSize: 12),
+                    style: const TextStyle(color: kBlack, fontSize: 12),
                   ),
                 ],
               ),
             ),
             buildTag(
               (_job!['status'] ?? 'open').toString().toUpperCase(),
-              kBlue,
+              kBlack,
             ),
           ],
         ),
@@ -347,7 +350,7 @@ class _BidsScreenState extends State<BidsScreen> {
 
   Widget _bidsList() => RefreshIndicator(
         onRefresh: _load,
-        color: kBlue,
+        color: kBlack,
         child: ListView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: _bids.length,
@@ -366,11 +369,10 @@ class _BidsScreenState extends State<BidsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: kWhite,
+        color: _yellow,
         borderRadius: BorderRadius.circular(18),
         boxShadow: kShadow,
-        border:
-            isCounterOffer ? Border.all(color: Colors.amber, width: 2) : null,
+        border: Border.all(color: kBlack, width: 1.3),
       ),
       child: Column(
         children: [
@@ -382,14 +384,14 @@ class _BidsScreenState extends State<BidsScreen> {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    gradient: kBlueGrad,
+                    color: kBlack,
                     shape: BoxShape.circle,
                   ),
                   child: Center(
                     child: Text(
                       initial,
                       style: const TextStyle(
-                        color: kWhite,
+                        color: _yellow,
                         fontWeight: FontWeight.w900,
                         fontSize: 18,
                       ),
@@ -419,7 +421,7 @@ class _BidsScreenState extends State<BidsScreen> {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.amber.shade100,
+                                color: kBlack,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Text(
@@ -427,7 +429,7 @@ class _BidsScreenState extends State<BidsScreen> {
                                 style: TextStyle(
                                   fontSize: 8,
                                   fontWeight: FontWeight.w800,
-                                  color: Colors.amber,
+                                  color: _yellow,
                                 ),
                               ),
                             ),
@@ -439,12 +441,12 @@ class _BidsScreenState extends State<BidsScreen> {
                           Icon(
                             Icons.star_rounded,
                             size: 13,
-                            color: Colors.amber.shade600,
+                            color: kBlack,
                           ),
                           const SizedBox(width: 3),
                           Text(
                             rating.toStringAsFixed(1),
-                            style: const TextStyle(color: kGrey, fontSize: 11),
+                            style: const TextStyle(color: kBlack, fontSize: 11),
                           ),
                         ],
                       ),
@@ -460,7 +462,7 @@ class _BidsScreenState extends State<BidsScreen> {
                         'Rs. ${bid.previousPrice!.toStringAsFixed(0)}',
                         style: const TextStyle(
                           decoration: TextDecoration.lineThrough,
-                          color: kGrey,
+                          color: kBlack,
                           fontSize: 11,
                         ),
                       ),
@@ -470,13 +472,13 @@ class _BidsScreenState extends State<BidsScreen> {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        gradient: isCounterOffer ? kOrangeGrad : kGreenGrad,
+                        color: kBlack,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         'Rs. ${bid.offeredPrice.toStringAsFixed(0)}',
                         style: const TextStyle(
-                          color: kWhite,
+                          color: _yellow,
                           fontWeight: FontWeight.w900,
                           fontSize: 14,
                         ),
@@ -494,13 +496,14 @@ class _BidsScreenState extends State<BidsScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: kBg,
+                  color: kWhite,
                   borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: kBlack.withValues(alpha: 0.55)),
                 ),
                 child: Text(
                   '"${bid.message}"',
                   style: const TextStyle(
-                    color: kGrey,
+                    color: kBlack,
                     fontSize: 12,
                     fontStyle: FontStyle.italic,
                   ),
@@ -515,7 +518,7 @@ class _BidsScreenState extends State<BidsScreen> {
                   icon: const Icon(Icons.person_search_rounded, size: 16),
                   label: const Text('View Profile'),
                   onPressed: () => _viewProfile(bid),
-                  style: TextButton.styleFrom(foregroundColor: kBlue),
+                  style: TextButton.styleFrom(foregroundColor: kBlack),
                 ),
                 const Spacer(),
                 SizedBox(
@@ -523,7 +526,7 @@ class _BidsScreenState extends State<BidsScreen> {
                   child: ElevatedButton(
                     onPressed: _accepting == bid.id ? null : () => _accept(bid),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isCounterOffer ? Colors.amber : kGreen,
+                      backgroundColor: kBlack,
                       minimumSize: Size.zero,
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       shape: RoundedRectangleBorder(
@@ -535,13 +538,14 @@ class _BidsScreenState extends State<BidsScreen> {
                             width: 14,
                             height: 14,
                             child: CircularProgressIndicator(
-                              color: kWhite,
+                              color: _yellow,
                               strokeWidth: 2,
                             ),
                           )
                         : Text(
                             isCounterOffer ? 'Accept New Price' : 'Accept',
-                            style: const TextStyle(fontWeight: FontWeight.w800),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w800, color: _yellow),
                           ),
                   ),
                 ),
@@ -557,7 +561,7 @@ class _BidsScreenState extends State<BidsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.inbox_outlined, size: 64, color: kGrey),
+            const Icon(Icons.inbox_outlined, size: 64, color: kBlack),
             const SizedBox(height: 16),
             const Text(
               'No Bids Yet',
@@ -570,7 +574,7 @@ class _BidsScreenState extends State<BidsScreen> {
             const SizedBox(height: 8),
             const Text(
               'Workers will see your job card soon.',
-              style: TextStyle(color: kGrey, fontSize: 13),
+              style: TextStyle(color: kBlack, fontSize: 13),
             ),
           ],
         ),

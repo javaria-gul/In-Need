@@ -59,7 +59,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _listenSocket() {
-    // Use unique event key to avoid conflicts with dashboard listener
+    // Only listen on custom key to avoid duplicate messages
     SocketService().off(_socketKey);
     SocketService().on(_socketKey, (d) {
       final msgJobId = d['jobId'];
@@ -67,28 +67,16 @@ class _ChatScreenState extends State<ChatScreen> {
           msgJobId?.toString() == widget.jobId.toString();
       if (sameJob && mounted) {
         final msg = ChatMessageModel.fromJson(d);
-        setState(() => _msgs.add(msg));
-        _scrollToBottom();
-        SocketService().markRead(widget.jobId);
-      }
-    });
-    // Also listen on standard event
-    SocketService().on('message_received', (d) {
-      final msgJobId = d['jobId'];
-      final sameJob = msgJobId == widget.jobId ||
-          msgJobId?.toString() == widget.jobId.toString();
-      if (sameJob && mounted) {
-        final msg = ChatMessageModel.fromJson(d);
-        // Avoid duplicate from optimistic add
+        // Check if message already exists (optimistic add)
         final alreadyExists = _msgs.any((m) =>
-            m.senderId == (_myId ?? 0) &&
-            m.message == d['message'] &&
+            m.senderId == msg.senderId &&
+            m.message == msg.message &&
             DateTime.now().difference(m.createdAt).inSeconds < 5);
         if (!alreadyExists) {
           setState(() => _msgs.add(msg));
           _scrollToBottom();
-          SocketService().markRead(widget.jobId);
         }
+        SocketService().markRead(widget.jobId);
       }
     });
   }
@@ -134,6 +122,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void dispose() {
     SocketService().off(_socketKey);
+    SocketService().off('message_received');
     _msgCtrl.dispose();
     _scroll.dispose();
     super.dispose();

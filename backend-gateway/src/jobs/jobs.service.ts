@@ -53,7 +53,9 @@ export class JobsService {
 
   private async dispatchToAI(job: Job): Promise<void> {
     try {
-      const aiUrl = process.env.AI_SERVICE_URL ?? 'http://ai-service:8000';
+      const aiUrl =
+        process.env.AI_SERVICE_URL ??
+        'https://in-need-production-00d5.up.railway.app';
       
       // ✅ IMPROVED: Calculate urgency_minutes from actual deadline if provided
       let urgencyMins: number;

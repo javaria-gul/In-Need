@@ -41,7 +41,7 @@ Apka Hunar/
 ├── 📱 Frontend (Flutter)          - Cross-platform mobile app
 ├── 🚀 Backend Gateway (NestJS)    - REST API & WebSocket server
 ├── 🤖 AI Service (FastAPI)        - Matching algorithm engine
-├── ⛓️ Blockchain Service (Node)   - Smart contracts & verification
+├── ⛓️ Blockchain Service (Node)   - Smart contracts & verification (now mirrored in gateway)
 └── 🐘 Database (PostgreSQL)       - Central data store
 ```
 
@@ -100,9 +100,9 @@ cp .env.example .env.development
 docker-compose up -d
 
 # 4. Verify services
-curl http://192.168.0.47:3000/api           # Swagger API docs
-curl http://192.168.0.47:3000/health        # Health check
-curl http://192.168.0.47:5050               # PgAdmin
+curl https://in-need-production.up.railway.app/api           # Swagger API docs
+curl https://in-need-production.up.railway.app/health        # Health check
+curl http://192.168.1.11:5050               # PgAdmin
 
 # 5. View logs
 docker-compose logs -f gateway
@@ -112,12 +112,12 @@ docker-compose logs -f gateway
 
 | Service | URL | Purpose |
 |---------|-----|---------|
-| API Gateway | `http://192.168.0.47:3000` | REST API & WebSocket |
-| Swagger Docs | `http://192.168.0.47:3000/api` | API documentation |
-| AI Service | `http://192.168.0.47:8000/docs` | FastAPI docs |
-| Database | `192.168.0.47:5432` | PostgreSQL |
-| PgAdmin | `http://192.168.0.47:5050` | DB management |
-| Blockchain | `http://192.168.0.47:3001` | Smart contracts |
+| API Gateway | `https://in-need-production.up.railway.app` | REST API & WebSocket |
+| Swagger Docs | `https://in-need-production.up.railway.app/api` | API documentation |
+| AI Service | `https://in-need-production-00d5.up.railway.app/docs` | FastAPI docs |
+| Database | `192.168.1.11:5432` | PostgreSQL |
+| PgAdmin | `http://192.168.1.11:5050` | DB management |
+| Blockchain | `https://in-need-production.up.railway.app` | Smart contracts & verification |
 
 ---
 
@@ -282,7 +282,7 @@ POST   /reviews                 # Submit review
 GET    /reviews/user/:userId    # Get user reviews
 ```
 
-**Full API documentation:** http://192.168.0.47:3000/api (Swagger UI)
+**Full API documentation:** http://192.168.1.11:3000/api (Swagger UI)
 
 ---
 
@@ -513,4 +513,4 @@ See [SECURITY.md](./SECURITY.md) for detailed security guidelines.
 For detailed setup and deployment information:
 - **Getting Started:** [DEPLOYMENT.md](./DEPLOYMENT.md)
 - **Security Guide:** [SECURITY.md](./SECURITY.md)
-- **API Docs:** http://192.168.0.47:3000/api (after `docker-compose up`)
+- **API Docs:** http://192.168.1.11:3000/api (after `docker-compose up`)

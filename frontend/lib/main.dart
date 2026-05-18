@@ -33,7 +33,7 @@ class ApkaHunarApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Apka Hunar',
+      title: 'InNeed',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(),
       initialRoute: '/',

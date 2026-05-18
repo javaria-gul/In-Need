@@ -41,12 +41,12 @@ export class ConfigService {
   get corsOrigins(): string[] {
     const configuredOrigins = process.env.CORS_ORIGIN
       ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
-      : ['http://192.168.0.47:3000'];
+      : ['http://192.168.1.11:3000'];
     return configuredOrigins;
   }
 
   get cors() {
-    // In development, allow all 192.168.0.47 ports (for Flutter web with random ports)
+    // In development, allow all 192.168.1.11 ports (for Flutter web with random ports)
     // In production, use specific CORS_ORIGIN from environment
     if (this.isDevelopment) {
       return {
@@ -54,8 +54,8 @@ export class ConfigService {
           // Allow requests with no origin (like mobile apps, Postman, curl)
           if (!origin) return callback(null, true);
           
-          // Allow 192.168.0.47 on any port
-          if (origin.includes('192.168.0.47') || origin.includes('127.0.0.1')) {
+          // Allow 192.168.1.11 on any port
+          if (origin.includes('192.168.1.11') || origin.includes('127.0.0.1')) {
             return callback(null, true);
           }
           
@@ -92,7 +92,9 @@ export class ConfigService {
   // ─── AI SERVICE ───────────────────────────────────────────────────────────
   get aiService() {
     return {
-      url: process.env.AI_SERVICE_URL || 'http://ai-service:8000',
+      url:
+        process.env.AI_SERVICE_URL ||
+        'https://in-need-production-00d5.up.railway.app',
       timeout: 30000,
     };
   }
@@ -100,7 +102,9 @@ export class ConfigService {
   // ─── BLOCKCHAIN SERVICE ───────────────────────────────────────────────────
   get blockchainService() {
     return {
-      url: process.env.BLOCKCHAIN_SERVICE_URL || 'http://blockchain-service:3001',
+      url:
+        process.env.BLOCKCHAIN_SERVICE_URL ||
+        'https://in-need-production.up.railway.app',
       timeout: 30000,
     };
   }

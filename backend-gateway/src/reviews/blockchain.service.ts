@@ -1,46 +1,72 @@
 import { Injectable } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
 import * as crypto from 'crypto';
+
+export interface ReviewData {
+  reviewId: number;
+  jobId: number;
+  reviewerId: number;
+  revieweeId: number;
+  overallRating: number;
+  comment: string;
+  imageUrls: string[];
+  createdAt: string;
+}
+
+export interface LedgerEntry {
+  reviewId: number;
+  hash: string;
+  previousHash: string;
+  timestamp: string;
+}
+
+const ledger: LedgerEntry[] = [];
 
 @Injectable()
 export class BlockchainService {
-  private readonly blockchainUrl =
-    process.env.BLOCKCHAIN_SERVICE_URL ?? 'http://192.168.0.47:3001';
+  private readonly genesisHash = '0000000000000000';
 
-  constructor(private readonly httpService: HttpService) {}
+  private generateHash(data: ReviewData, previousHash: string): string {
+    const content = JSON.stringify({
+      reviewId: data.reviewId,
+      jobId: data.jobId,
+      reviewerId: data.reviewerId,
+      revieweeId: data.revieweeId,
+      overallRating: data.overallRating,
+      comment: data.comment,
+      imageUrls: data.imageUrls,
+      createdAt: data.createdAt,
+      previousHash,
+    });
+
+    return crypto.createHash('sha256').update(content).digest('hex');
+  }
+
+  private getPreviousHash(): string {
+    return ledger.length > 0 ? ledger[ledger.length - 1].hash : this.genesisHash;
+  }
+
+  private addToLedger(data: ReviewData, previousHash?: string): LedgerEntry {
+    const effectivePreviousHash = previousHash?.trim() || this.getPreviousHash();
+    const hash = this.generateHash(data, effectivePreviousHash);
+
+    const entry: LedgerEntry = {
+      reviewId: data.reviewId,
+      hash,
+      previousHash: effectivePreviousHash,
+      timestamp: new Date().toISOString(),
+    };
+
+    ledger.push(entry);
+    return entry;
+  }
 
   // 🔗 FULL BLOCKCHAIN: Hash with previous hash
-  async hashReviewWithPrevious(data: {
-    reviewId: number;
-    jobId: number;
-    reviewerId: number;
-    revieweeId: number;
-    overallRating: number;
-    comment: string;
-    imageUrls: string[];
-    createdAt: string;
-    previousHash: string;
-  }): Promise<string> {
+  async hashReviewWithPrevious(data: ReviewData & { previousHash: string }): Promise<string> {
     try {
-      // Create a string with all data including previous hash
-      const dataString = JSON.stringify(data);
-      
-      // Generate SHA-256 hash
-      const hash = crypto.createHash('sha256').update(dataString).digest('hex');
-      
-      // Also try to send to external blockchain service if available
-      try {
-        const response = await firstValueFrom(
-          this.httpService.post(`${this.blockchainUrl}/hash-chain`, data),
-        );
-        return response.data?.hash || hash;
-      } catch {
-        return hash;
-      }
+      const entry = this.addToLedger(data, data.previousHash);
+      return entry.hash;
     } catch (error) {
       console.error('Blockchain hash error:', error);
-      // Fallback to local hash
       const fallbackData = JSON.stringify({
         ...data,
         timestamp: Date.now(),
@@ -50,15 +76,16 @@ export class BlockchainService {
   }
 
   async verifyReview(reviewId: number, hash: string): Promise<boolean> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.get(`${this.blockchainUrl}/verify/${reviewId}/${hash}`),
-      );
-      return response.data?.isValid === true;
-    } catch (error) {
-      // If external service fails, hash seems valid
-      console.error('Blockchain verify error:', error);
-      return hash !== null && hash !== '';
-    }
+    const entry = ledger.find((e) => e.reviewId === reviewId);
+    if (!entry) return false;
+    return entry.hash === hash;
+  }
+
+  getLedger(): LedgerEntry[] {
+    return ledger;
+  }
+
+  getHealth(): { status: string } {
+    return { status: 'ok' };
   }
 }

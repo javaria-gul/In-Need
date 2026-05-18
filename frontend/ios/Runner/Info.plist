@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Apka Hunar</string>
+	<string>InNeed</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>frontend</string>
+	<string>InNeed</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -68,10 +68,10 @@
 	</array>
 
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Apka Hunar needs your location to find workers and jobs near you.</string>
+	<string>InNeed needs your location to find workers and jobs near you.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Apka Hunar uses your location to match you with nearby jobs and workers.</string>
+	<string>InNeed uses your location to match you with nearby jobs and workers.</string>
 	<key>CFBundleDisplayName</key>
-	<string>Apka Hunar</string>
+	<string>InNeed</string>
 </dict>
 </plist>

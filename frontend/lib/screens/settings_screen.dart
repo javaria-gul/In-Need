@@ -20,31 +20,106 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final _api = ApiService();
 
-  void _changeName() {
-    final ctrl = TextEditingController(
-        text: widget.user?['fullName'] as String? ?? '');
+  void _changeField({
+    required String title,
+    required String key,
+    required String hint,
+    String? initial,
+    String successMessage = 'Updated successfully!',
+  }) {
+    final ctrl = TextEditingController(text: initial ?? '');
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _inputSheet(
-        title: 'Change Name',
+        title: title,
         controller: ctrl,
-        hint: 'Full Name',
+        hint: hint,
         onSave: () async {
           if (ctrl.text.trim().isEmpty) return;
           try {
-            await _api.updateMe({'fullName': ctrl.text.trim()});
+            await _api.updateMe({key: ctrl.text.trim()});
             widget.onRefresh();
             if (mounted) {
               Navigator.pop(context);
-              showSnack(context, 'Name updated!', ok: true);
+              showSnack(context, successMessage, ok: true);
             }
           } catch (e) {
             if (mounted) showSnack(context, e.toString(), err: true);
           }
         },
       ),
+    );
+  }
+
+  void _changeName() {
+    _changeField(
+      title: 'Change Name',
+      key: 'fullName',
+      hint: 'Full Name',
+      initial: widget.user?['fullName'] as String? ?? '',
+      successMessage: 'Name updated!',
+    );
+  }
+
+  void _changePhone() {
+    _changeField(
+      title: 'Change Phone Number',
+      key: 'phoneNumber',
+      hint: 'Phone Number',
+      initial: widget.user?['phoneNumber'] as String? ?? '',
+      successMessage: 'Phone number updated!',
+    );
+  }
+
+  void _changeEmail() {
+    _changeField(
+      title: 'Change Email',
+      key: 'email',
+      hint: 'Email Address',
+      initial: widget.user?['email'] as String? ?? '',
+      successMessage: 'Email updated!',
+    );
+  }
+
+  void _changeCity() {
+    _changeField(
+      title: 'Change City',
+      key: 'city',
+      hint: 'City',
+      initial: widget.user?['city'] as String? ?? '',
+      successMessage: 'City updated!',
+    );
+  }
+
+  void _changeArea() {
+    _changeField(
+      title: 'Change Area',
+      key: 'area',
+      hint: 'Area',
+      initial: widget.user?['area'] as String? ?? '',
+      successMessage: 'Area updated!',
+    );
+  }
+
+  void _changeCountry() {
+    _changeField(
+      title: 'Change Country',
+      key: 'country',
+      hint: 'Country',
+      initial: widget.user?['country'] as String? ?? '',
+      successMessage: 'Country updated!',
+    );
+  }
+
+  void _changeSkills() {
+    _changeField(
+      title: 'Change Skills',
+      key: 'skills',
+      hint: 'Skills (comma-separated)',
+      initial: widget.user?['skills'] as String? ?? '',
+      successMessage: 'Skills updated!',
     );
   }
 
@@ -76,24 +151,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         borderRadius: BorderRadius.circular(2)))),
             const SizedBox(height: 20),
             const Text('Change Password',
-                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17, color: kBlack)),
+                style: TextStyle(
+                    fontWeight: FontWeight.w900, fontSize: 17, color: kBlack)),
             const SizedBox(height: 20),
             TextField(
                 controller: oldCtrl,
                 obscureText: true,
-                decoration: const InputDecoration(labelText: 'Current Password',
+                decoration: const InputDecoration(
+                    labelText: 'Current Password',
                     prefixIcon: Icon(Icons.lock_outline_rounded))),
             const SizedBox(height: 12),
             TextField(
                 controller: newCtrl,
                 obscureText: true,
-                decoration: const InputDecoration(labelText: 'New Password',
+                decoration: const InputDecoration(
+                    labelText: 'New Password',
                     prefixIcon: Icon(Icons.lock_rounded))),
             const SizedBox(height: 12),
             TextField(
                 controller: confirmCtrl,
                 obscureText: true,
-                decoration: const InputDecoration(labelText: 'Confirm New Password',
+                decoration: const InputDecoration(
+                    labelText: 'Confirm New Password',
                     prefixIcon: Icon(Icons.lock_rounded))),
             const SizedBox(height: 20),
             GradBtn(
@@ -161,10 +240,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             decoration: InputDecoration(labelText: hint)),
         const SizedBox(height: 20),
         GradBtn(
-            text: 'Save',
-            onTap: onSave,
-            bgColor: kBlack,
-            foreColor: kWhite),
+            text: 'Save', onTap: onSave, bgColor: kBlack, foreColor: kWhite),
       ]),
     );
   }
@@ -172,8 +248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final user = widget.user;
-    final initial =
-        (user?['fullName'] as String? ?? 'A')[0].toUpperCase();
+    final initial = (user?['fullName'] as String? ?? 'A')[0].toUpperCase();
     final role = user?['activeRole']?.toString() ?? 'worker';
     final isPoster = role == 'employer';
 
@@ -181,7 +256,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       backgroundColor: kBg,
       appBar: AppBar(
         backgroundColor: kBlack,
-        title: const Text('Settings',
+        title: const Text('Settings & Account',
             style: TextStyle(color: kWhite, fontWeight: FontWeight.w800)),
         leading: const BackButton(color: kWhite),
       ),
@@ -222,22 +297,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Text(user?['phoneNumber'] ?? '',
                       style: const TextStyle(color: kGrey, fontSize: 12)),
                 ])),
-            buildTag(
-                isPoster ? 'EMPLOYER' : 'WORKER',
+            buildTag(isPoster ? 'EMPLOYER' : 'WORKER',
                 isPoster ? kPurple : const Color(0xFFF9F77E)),
           ]),
         ),
         const SizedBox(height: 28),
         _section('Account', [
-          _tile(Icons.person_outline_rounded, 'Change Name', kBlue,
-              _changeName),
+          _tile(
+              Icons.person_outline_rounded, 'Change Name', kBlue, _changeName),
+          _tile(Icons.phone_android_rounded, 'Change Phone Number', kBlack,
+              _changePhone),
+          _tile(Icons.mail_outline_rounded, 'Change Email', kPrimaryLime,
+              _changeEmail),
           _tile(Icons.lock_outline_rounded, 'Change Password', kPurple,
               _changePassword),
         ]),
         const SizedBox(height: 16),
+        _section('Profile Details', [
+          _tile(Icons.location_city_rounded, 'Change City', kPrimaryLime,
+              _changeCity),
+          _tile(Icons.map_outlined, 'Change Area', kBlack, _changeArea),
+          _tile(Icons.flag_rounded, 'Change Country', kPrimaryLime,
+              _changeCountry),
+          if (!isPoster)
+            _tile(Icons.build_circle_outlined, 'Change Skills', kBlack,
+                _changeSkills),
+        ]),
+        const SizedBox(height: 16),
         _section('More', [
           _tile(Icons.help_outline_rounded, 'Help & Support', kOrange, () {}),
-          _tile(Icons.privacy_tip_outlined, 'Privacy Policy', Colors.teal,
+          _tile(Icons.privacy_tip_outlined, 'Privacy Policy', kPrimaryLime,
               () {}),
           _tile(Icons.info_outline_rounded, 'About Apka Hunar', kGrey, () {}),
         ]),
@@ -258,14 +347,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   decoration: BoxDecoration(
                       color: kRed.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12)),
-                  child: const Icon(Icons.logout_rounded,
-                      color: kRed, size: 20)),
+                  child:
+                      const Icon(Icons.logout_rounded, color: kRed, size: 20)),
               const SizedBox(width: 14),
               const Text('Logout',
                   style: TextStyle(
-                      color: kRed,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 14)),
+                      color: kRed, fontWeight: FontWeight.w800, fontSize: 14)),
               const Spacer(),
               const Icon(Icons.chevron_right_rounded, color: kRed),
             ]),
@@ -299,8 +386,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _tile(IconData icon, String title, Color color, VoidCallback onTap) =>
       ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: Container(
             width: 38,
             height: 38,
@@ -311,8 +397,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: Text(title,
             style: const TextStyle(
                 fontWeight: FontWeight.w700, fontSize: 14, color: kBlack)),
-        trailing: const Icon(Icons.chevron_right_rounded,
-            color: kGrey, size: 18),
+        trailing:
+            const Icon(Icons.chevron_right_rounded, color: kGrey, size: 18),
         onTap: onTap,
       );
 }
