@@ -32,8 +32,13 @@ export class ReviewsService {
     beforeImageUrl: string,
     afterImageUrl: string,
   ): Promise<Review> {
-    const job = await this.jobRepo.findOne({ where: { id: dto.jobId } });
-    if (!job) throw new NotFoundException('Job not found');
+    const requestedJobId = Number(dto.jobId);
+    console.log(`ReviewsService: submitReview called for jobId=${dto.jobId} (parsed=${requestedJobId}) by reviewer=${reviewerId}`);
+    const job = await this.jobRepo.findOne({ where: { id: requestedJobId } });
+    if (!job) {
+      console.error(`ReviewsService: job not found for id=${requestedJobId}`);
+      throw new NotFoundException('Job not found');
+    }
     if (job.status !== JobStatus.COMPLETE)
       throw new ForbiddenException('Job not complete yet');
 
