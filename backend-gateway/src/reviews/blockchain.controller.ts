@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { BlockchainService, ReviewData } from './blockchain.service.js';
+import { BlockchainService } from './blockchain.service.js';
+import type { ReviewData } from './blockchain.service.js';
 
 @ApiTags('blockchain')
 @Controller()
