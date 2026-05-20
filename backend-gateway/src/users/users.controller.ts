@@ -10,10 +10,15 @@ import {
   BadRequestException,
   UseGuards,
   Request,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from './users.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -22,7 +27,10 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   // ─── PUBLIC ──────────────────────────────────────────────────────────────
 
@@ -72,6 +80,24 @@ export class UsersController {
     const user = await this.usersService.update(req.user.userId, dto);
     const { password, ...result } = user as any;
     return result;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post('me/avatar')
+  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
+  @ApiOperation({ summary: 'Upload/change profile avatar' })
+  async uploadAvatar(@Request() req: any, @UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('Image file is required');
+
+    const url = await this.cloudinaryService.uploadImage(file, 'apka-hunar/avatars');
+
+    // Update user's avatarUrl in DB
+    await this.usersService.update(req.user.userId, { avatarUrl: url } as any);
+
+    const user = await this.usersService.findOne(req.user.userId);
+    const { password, ...result } = user as any;
+    return { success: true, avatarUrl: url, user: result };
   }
 
   @UseGuards(JwtAuthGuard)

@@ -29,12 +29,12 @@ export class CloudinaryService {
     this.configured = true;
   }
 
-  async uploadImage(file: Express.Multer.File): Promise<string> {
+  async uploadImage(file: Express.Multer.File, folder = 'apka-hunar/reviews'): Promise<string> {
     this.ensureConfigured();
 
     return new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(
-        { folder: 'apka-hunar/reviews' },
+        { folder },
         (error, result) => {
           if (error) reject(error);
           else resolve(result!.secure_url);

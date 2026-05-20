@@ -91,6 +91,15 @@ export class UsersService {
 
   async update(id: number, dto: UpdateUserDto): Promise<User> {
     if (dto.fullName) dto.fullName = this.sanitize(dto.fullName);
+    if (dto.phoneNumber) dto.phoneNumber = this.sanitize(dto.phoneNumber);
+
+    if (dto.phoneNumber) {
+      const existing = await this.repo.findOne({ where: { phoneNumber: dto.phoneNumber } });
+      if (existing && existing.id !== id) {
+        throw new ConflictException('Phone number already registered.');
+      }
+    }
+
     await this.repo.update(id, dto);
     return this.findOne(id);
   }

@@ -191,17 +191,20 @@ class SeekerHomeScreen extends StatelessWidget {
                                   const TextStyle(color: kGrey, fontSize: 11)),
                         ]),
                     const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                            colors: [Color(0xFFF9F77E), Color(0xFFE8E660)]),
-                        borderRadius: BorderRadius.circular(14),
+                    GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, '/job-feed'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                              colors: [Color(0xFFF9F77E), Color(0xFFE8E660)]),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Text('View Jobs',
+                            style: TextStyle(
+                                color: kBlack, fontWeight: FontWeight.w800)),
                       ),
-                      child: const Text('View Jobs',
-                          style: TextStyle(
-                              color: kBlack, fontWeight: FontWeight.w800)),
                     ),
                   ]),
                 ),

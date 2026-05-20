@@ -1,9 +1,14 @@
-import { IsOptional, IsString, IsNumber } from 'class-validator';
+import { IsOptional, IsString, IsNumber, Matches } from 'class-validator';
 
 export class UpdateUserDto {
   @IsOptional()
   @IsString()
   fullName?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^[0-9]{10,11}$/, { message: 'Phone number must be 10-11 digits' })
+  phoneNumber?: string;
 
   @IsOptional()
   @IsString()

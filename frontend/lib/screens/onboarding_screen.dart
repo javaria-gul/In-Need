@@ -160,7 +160,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   children: [
                     // ROLE 1: Poster - UP TO AVOID SWITCH ELEMENT
                     Positioned(
-                      right: size.width * 0.18 +
+                      right: size.width * 0.05 +
                           (_scrollOffset * size.width * 0.6),
                       bottom: size.height * 0.17,
                       child: Opacity(
@@ -174,7 +174,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     ),
                     // Role 2: Seeker - UP TO AVOID SWITCH ELEMENT
                     Positioned(
-                      left: size.width * 0.00 +
+                      left: size.width * -0.08 +
                           ((1.0 - _scrollOffset) * size.width * 0.6),
                       bottom: size.height * 0.13,
                       child: Opacity(
@@ -196,7 +196,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
           // 4. SCREEN 3: MAP & ULTRA ANIMATED GIGS CANVAS (PUSHED UPWARDS)
           Positioned(
-            bottom: size.height * 0.11,
+            bottom: size.height * 0.17,
             left: 0,
             right: 0,
             height: size.height * 0.65,
@@ -795,30 +795,30 @@ class _AnimatedGigsStackState extends State<_AnimatedGigsStack>
           children: [
             // Gig 2 (Maximized Scale, bottom-left overlapping layer)
             Positioned(
-              top: 90 + (_floatingAnim.value * 0.4),
+              top: 118 + (_floatingAnim.value * 0.4),
               left: screenWidth * 0.01,
               child: Image.asset(
                 'assets/images/gig2.png',
-                width: screenWidth * 0.60,
+                width: screenWidth * 0.68,
                 fit: BoxFit.contain,
               ),
             ),
             // Gig 3 (Maximized Scale, bottom-right overlapping layer)
             Positioned(
-              top: 95 + (_floatingAnim.value * 0.3),
+              top: 123 + (_floatingAnim.value * 0.3),
               right: screenWidth * 0.01,
               child: Image.asset(
                 'assets/images/gig3.png',
-                width: screenWidth * 0.60,
+                width: screenWidth * 0.68,
                 fit: BoxFit.contain,
               ),
             ),
             // Gig 1 (Main Central Top Focus Item - HUGE)
             Positioned(
-              top: 10 - _floatingAnim.value,
+              top: 38 - _floatingAnim.value,
               child: Image.asset(
                 'assets/images/gig1.png',
-                width: screenWidth * 0.78,
+                width: screenWidth * 0.87,
                 fit: BoxFit.contain,
               ),
             ),
@@ -867,11 +867,53 @@ class BackgroundPatternPainter extends CustomPainter {
         paint,
       );
 
-      // Mid-right charcoal circle with parallax
-      paint.color = const Color(0xFF1A1A1A).withValues(alpha: 0.10);
+      // Mid-right soft pink circle with parallax
+      paint.color = pinkColor.withValues(alpha: 0.14);
       canvas.drawCircle(
         Offset(size.width * 0.92 + parallaxOffset, size.height * 0.65),
         48,
+        paint,
+      );
+
+      // Soft extra blush accent
+
+      // Scattered pastel dots for screen 1
+      paint.color = const Color(0xFFFADDE7).withValues(alpha: 0.55);
+      canvas.drawCircle(
+          Offset(size.width * 0.06, size.height * 0.32), 5, paint);
+      canvas.drawCircle(
+          Offset(size.width * 0.22, size.height * 0.12), 4, paint);
+      canvas.drawCircle(
+          Offset(size.width * 0.42, size.height * 0.72), 6, paint);
+      paint.color = const Color(0xFFF7EFC3).withValues(alpha: 0.60);
+      canvas.drawCircle(
+          Offset(size.width * 0.84, size.height * 0.18), 5, paint);
+      canvas.drawCircle(
+          Offset(size.width * 0.66, size.height * 0.50), 4, paint);
+      paint.color = const Color(0xFFF8E9D7).withValues(alpha: 0.60);
+      canvas.drawCircle(
+          Offset(size.width * 0.90, size.height * 0.84), 5, paint);
+      canvas.drawCircle(
+          Offset(size.width * 0.30, size.height * 0.58), 4, paint);
+      paint.color = pinkColor.withValues(alpha: 0.08);
+      canvas.drawCircle(
+          Offset(size.width * 0.72, size.height * 0.18), 24, paint);
+
+      // Additional soft accents for screen 1
+      paint.color = beigeColor.withValues(alpha: 0.28);
+      canvas.drawCircle(
+          Offset(size.width * 0.62, size.height * 0.78), 18, paint);
+
+      paint.color = const Color(0xFFF7EFC3).withValues(alpha: 0.18);
+      canvas.drawCircle(
+          Offset(size.width * 0.28, size.height * 0.24), 16, paint);
+
+      paint.color = pinkColor.withValues(alpha: 0.06);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(size.width * 0.72, size.height * 0.52, 72, 14),
+          const Radius.circular(10),
+        ),
         paint,
       );
 
@@ -880,7 +922,7 @@ class BackgroundPatternPainter extends CustomPainter {
       canvas.drawCircle(
           Offset(size.width * 0.15, size.height * 0.45), 35, paint);
 
-      paint.color = const Color(0xFF2B2B2B).withValues(alpha: 0.08);
+      paint.color = beigeColor.withValues(alpha: 0.40);
       canvas.drawCircle(
           Offset(size.width * 0.80, size.height * 0.35), 40, paint);
 
@@ -888,7 +930,7 @@ class BackgroundPatternPainter extends CustomPainter {
       canvas.drawCircle(
           Offset(size.width * 0.54, size.height * 0.14), 26, paint);
 
-      paint.color = const Color(0xFF1A1A1A).withValues(alpha: 0.06);
+      paint.color = pinkColor.withValues(alpha: 0.08);
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromLTWH(size.width * 0.18, size.height * 0.72, 92, 18),
@@ -910,28 +952,46 @@ class BackgroundPatternPainter extends CustomPainter {
         paint,
       );
 
-      // Bottom-right charcoal circle with parallax
-      paint.color = const Color(0xFF1A1A1A).withValues(alpha: 0.10);
+      // Bottom-right soft pink circle with parallax
+      paint.color = pinkColor.withValues(alpha: 0.14);
       canvas.drawCircle(
         Offset(size.width * 0.90 + parallaxOffset, size.height * 0.72),
         50,
         paint,
       );
 
+      // Soft extra accent
+      paint.color = beigeColor.withValues(alpha: 0.36);
+      canvas.drawCircle(
+          Offset(size.width * 0.70, size.height * 0.20), 22, paint);
+
       // Extra elements for screen 2
       paint.color = const Color(0xFFE8E57C).withValues(alpha: 0.14);
       canvas.drawCircle(
           Offset(size.width * 0.20, size.height * 0.55), 38, paint);
 
-      paint.color = const Color(0xFF2F2F2F).withValues(alpha: 0.08);
+      paint.color = pinkColor.withValues(alpha: 0.08);
       canvas.drawCircle(
           Offset(size.width * 0.75, size.height * 0.40), 42, paint);
+
+      paint.color = const Color(0xFFF8E9D7).withValues(alpha: 0.22);
+      canvas.drawCircle(
+          Offset(size.width * 0.32, size.height * 0.28), 20, paint);
 
       paint.color = const Color(0xFFF1EF7E).withValues(alpha: 0.10);
       canvas.drawCircle(
           Offset(size.width * 0.48, size.height * 0.16), 28, paint);
 
-      paint.color = const Color(0xFF1A1A1A).withValues(alpha: 0.06);
+      paint.color = beigeColor.withValues(alpha: 0.30);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(size.width * 0.12, size.height * 0.67, 74, 16),
+          const Radius.circular(10),
+        ),
+        paint,
+      );
+
+      paint.color = beigeColor.withValues(alpha: 0.38);
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromLTWH(size.width * 0.60, size.height * 0.74, 88, 18),
@@ -939,6 +999,25 @@ class BackgroundPatternPainter extends CustomPainter {
         ),
         paint,
       );
+
+      // Scattered pastel dots for screen 2
+      paint.color = const Color(0xFFFADDE7).withValues(alpha: 0.55);
+      canvas.drawCircle(
+          Offset(size.width * 0.08, size.height * 0.34), 5, paint);
+      canvas.drawCircle(
+          Offset(size.width * 0.26, size.height * 0.14), 4, paint);
+      canvas.drawCircle(
+          Offset(size.width * 0.44, size.height * 0.76), 6, paint);
+      paint.color = const Color(0xFFF7EFC3).withValues(alpha: 0.60);
+      canvas.drawCircle(
+          Offset(size.width * 0.86, size.height * 0.22), 5, paint);
+      canvas.drawCircle(
+          Offset(size.width * 0.68, size.height * 0.58), 4, paint);
+      paint.color = const Color(0xFFF8E9D7).withValues(alpha: 0.60);
+      canvas.drawCircle(
+          Offset(size.width * 0.92, size.height * 0.86), 5, paint);
+      canvas.drawCircle(
+          Offset(size.width * 0.34, size.height * 0.48), 4, paint);
     }
     // === SCREEN 3 (2.0+): Yellow & charcoal with parallax ===
     else {
@@ -953,28 +1032,46 @@ class BackgroundPatternPainter extends CustomPainter {
         paint,
       );
 
-      // Bottom-right charcoal circle with parallax
-      paint.color = const Color(0xFF1A1A1A).withValues(alpha: 0.10);
+      // Bottom-right soft pink circle with parallax
+      paint.color = pinkColor.withValues(alpha: 0.14);
       canvas.drawCircle(
         Offset(size.width * 0.88 + parallaxOffset, size.height * 0.68),
         52,
         paint,
       );
 
+      // Soft extra blush accent
+      paint.color = beigeColor.withValues(alpha: 0.35);
+      canvas.drawCircle(
+          Offset(size.width * 0.74, size.height * 0.22), 24, paint);
+
       // Extra elements for screen 3
       paint.color = const Color(0xFFE8E57C).withValues(alpha: 0.14);
       canvas.drawCircle(
           Offset(size.width * 0.18, size.height * 0.50), 36, paint);
 
-      paint.color = const Color(0xFF2F2F2F).withValues(alpha: 0.08);
+      paint.color = pinkColor.withValues(alpha: 0.08);
       canvas.drawCircle(
           Offset(size.width * 0.82, size.height * 0.30), 44, paint);
+
+      paint.color = const Color(0xFFF8E9D7).withValues(alpha: 0.20);
+      canvas.drawCircle(
+          Offset(size.width * 0.30, size.height * 0.26), 22, paint);
 
       paint.color = const Color(0xFFF1EF7E).withValues(alpha: 0.10);
       canvas.drawCircle(
           Offset(size.width * 0.52, size.height * 0.12), 28, paint);
 
-      paint.color = const Color(0xFF1A1A1A).withValues(alpha: 0.06);
+      paint.color = beigeColor.withValues(alpha: 0.28);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(size.width * 0.14, size.height * 0.66, 76, 16),
+          const Radius.circular(10),
+        ),
+        paint,
+      );
+
+      paint.color = beigeColor.withValues(alpha: 0.38);
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromLTWH(size.width * 0.22, size.height * 0.70, 92, 18),
@@ -982,6 +1079,25 @@ class BackgroundPatternPainter extends CustomPainter {
         ),
         paint,
       );
+
+      // Scattered pastel dots for screen 3
+      paint.color = const Color(0xFFFADDE7).withValues(alpha: 0.55);
+      canvas.drawCircle(
+          Offset(size.width * 0.10, size.height * 0.30), 5, paint);
+      canvas.drawCircle(
+          Offset(size.width * 0.24, size.height * 0.16), 4, paint);
+      canvas.drawCircle(
+          Offset(size.width * 0.46, size.height * 0.74), 6, paint);
+      paint.color = const Color(0xFFF7EFC3).withValues(alpha: 0.60);
+      canvas.drawCircle(
+          Offset(size.width * 0.88, size.height * 0.20), 5, paint);
+      canvas.drawCircle(
+          Offset(size.width * 0.70, size.height * 0.54), 4, paint);
+      paint.color = const Color(0xFFF8E9D7).withValues(alpha: 0.60);
+      canvas.drawCircle(
+          Offset(size.width * 0.94, size.height * 0.82), 5, paint);
+      canvas.drawCircle(
+          Offset(size.width * 0.36, size.height * 0.46), 4, paint);
     }
   }
 

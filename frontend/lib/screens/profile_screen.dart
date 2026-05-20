@@ -3,6 +3,7 @@ import '../services/api_service.dart';
 import '../services/socket_service.dart';
 import '../services/storage_service.dart';
 import '../utils/app_theme.dart';
+import 'package:image_picker/image_picker.dart';
 import 'profile_reviews_screen.dart';
 import 'settings_screen.dart';
 
@@ -49,6 +50,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _load();
+  }
+
+  Future<void> _changeAvatar() async {
+    try {
+      final picker = ImagePicker();
+      final XFile? picked = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1200,
+        maxHeight: 1200,
+        imageQuality: 85,
+      );
+      if (picked == null) return;
+
+      final bytes = await picked.readAsBytes();
+
+      // show simple loading indicator
+      if (mounted) setState(() => _loading = true);
+
+      await ApiService().uploadAvatar(bytes, picked.name);
+
+      if (mounted) {
+        await _load();
+        showSnack(context, 'Profile picture updated!', ok: true);
+      }
+    } catch (e) {
+      if (mounted) showSnack(context, 'Failed to upload: $e', err: true);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   Future<void> _load() async {
@@ -126,52 +156,149 @@ class _ProfileScreenState extends State<ProfileScreen> {
             pinned: true,
             backgroundColor: kBlack,
             leading: const BackButton(color: kWhite),
-            title: Text(_isOwnProfile ? 'My Profile' : 'Profile'),
+            title:
+                _isOwnProfile ? const SizedBox.shrink() : const Text('Profile'),
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  // Cover page background
+                  // Cover: bright yellow
                   Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFF0D0D0D), Color(0xFF222222)],
+                        colors: [Color(0xFFFEF88E), Color(0xFFFEEC70)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                     ),
                   ),
-                  // Profile info centered at top
+
+                  // Decorative black and pink blobs
+                  Positioned(
+                    left: -50,
+                    top: 10,
+                    child: Container(
+                      width: 160,
+                      height: 160,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1A1A).withOpacity(0.25),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: -40,
+                    top: 40,
+                    child: Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE85E9C).withOpacity(0.28),
+                        borderRadius: BorderRadius.circular(70),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 40,
+                    bottom: 30,
+                    child: Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1A1A).withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: 30,
+                    bottom: 50,
+                    child: Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE85E9C).withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(45),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: -20,
+                    bottom: 10,
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1A1A).withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(60),
+                      ),
+                    ),
+                  ),
+
+                  // Profile avatar and info placed on cover
                   Positioned(
                     left: 0,
                     right: 0,
-                    top: 50,
+                    top: 60,
                     child: Column(
                       children: [
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: kPrimaryLime,
-                            boxShadow: [
-                              BoxShadow(
-                                color: kPrimaryLime.withValues(alpha: 0.35),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
-                              )
-                            ],
-                            border: Border.all(color: kBg, width: 4),
-                          ),
-                          child: Center(
-                            child: Text(
-                              initial,
-                              style: const TextStyle(
-                                color: kBlack,
-                                fontSize: 32,
-                                fontWeight: FontWeight.w900,
+                        GestureDetector(
+                          onTap: _isOwnProfile ? _changeAvatar : null,
+                          child: Stack(
+                            alignment: Alignment.bottomRight,
+                            children: [
+                              Container(
+                                width: 110,
+                                height: 110,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: kBlack,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          kPrimaryLime.withValues(alpha: 0.22),
+                                      blurRadius: 18,
+                                      offset: const Offset(0, 10),
+                                    )
+                                  ],
+                                ),
+                                child: ClipOval(
+                                  child: Center(
+                                    child: _user != null &&
+                                            (_user?['avatarUrl'] as String?)
+                                                    ?.isNotEmpty ==
+                                                true
+                                        ? Image.network(_user!['avatarUrl'],
+                                            fit: BoxFit.cover)
+                                        : Text(
+                                            initial,
+                                            style: const TextStyle(
+                                                color: Color(0xFFFEF88E),
+                                                fontSize: 40,
+                                                fontWeight: FontWeight.w900),
+                                          ),
+                                  ),
+                                ),
                               ),
-                            ),
+                              if (_isOwnProfile)
+                                Container(
+                                  width: 34,
+                                  height: 34,
+                                  margin: const EdgeInsets.only(
+                                      right: 4, bottom: 4),
+                                  decoration: BoxDecoration(
+                                    color: kWhite,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: kBlack.withOpacity(0.06),
+                                          blurRadius: 6)
+                                    ],
+                                  ),
+                                  child: const Icon(Icons.edit,
+                                      size: 18, color: kBlack),
+                                ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -181,29 +308,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           textAlign: TextAlign.center,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            color: kWhite,
-                            fontSize: 16,
+                            color: kBlack,
+                            fontSize: 18,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _activeRole.toUpperCase(),
-                          style: const TextStyle(
-                            color: Color(0xFFF9F77E),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: kBlack,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            _activeRole.toUpperCase(),
+                            style: const TextStyle(
+                              color: Color(0xFFFEF88E),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 6),
                         if ((_user?['city'] as String?)?.isNotEmpty ?? false)
-                          Text(
-                            '📍 ${_user?['city']}',
-                            style: const TextStyle(
-                              color: kGrey,
-                              fontSize: 11,
-                            ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.location_on_rounded,
+                                  size: 14, color: kGrey),
+                              const SizedBox(width: 6),
+                              Text(
+                                _user?['city'] ?? '',
+                                style: const TextStyle(
+                                  color: kGrey,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ),
                       ],
                     ),
@@ -224,10 +367,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        color: kWhite,
+                        color: kBlack,
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(
-                            color: kPrimaryLime.withValues(alpha: 0.45)),
                         boxShadow: kShadow,
                       ),
                       child: Row(
@@ -236,7 +377,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             width: 46,
                             height: 46,
                             decoration: BoxDecoration(
-                              color: kPrimaryLime.withValues(alpha: 0.2),
+                              color: const Color(0xFFFEF88E),
                               borderRadius: BorderRadius.circular(13),
                             ),
                             child: const Icon(Icons.rate_review_rounded,
@@ -252,7 +393,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ? 'Worker Reviews'
                                       : 'Employer Reviews',
                                   style: const TextStyle(
-                                      color: kBlack,
+                                      color: Color(0xFFFEF88E),
                                       fontWeight: FontWeight.w800,
                                       fontSize: 14),
                                 ),
@@ -260,7 +401,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 Text(
                                   'Tap to view all reviews for this role',
                                   style: TextStyle(
-                                    color: kGrey.withValues(alpha: 0.9),
+                                    color: kWhite.withValues(alpha: 0.7),
                                     fontSize: 11,
                                   ),
                                 ),
@@ -275,20 +416,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ? _activeRating.toStringAsFixed(1)
                                     : '—',
                                 style: const TextStyle(
-                                  color: kBlack,
+                                  color: Color(0xFFFEF88E),
                                   fontSize: 20,
                                   fontWeight: FontWeight.w900,
                                 ),
                               ),
                               Text(
                                 '$_activeRatingCount reviews',
-                                style:
-                                    const TextStyle(color: kGrey, fontSize: 11),
+                                style: TextStyle(
+                                    color: kWhite.withValues(alpha: 0.6),
+                                    fontSize: 11),
                               ),
                             ],
                           ),
                           const SizedBox(width: 10),
-                          const Icon(Icons.chevron_right_rounded, color: kGrey),
+                          const Icon(Icons.chevron_right_rounded,
+                              color: Color(0xFFFEF88E)),
                         ],
                       ),
                     ),
@@ -307,7 +450,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 16),
                         decoration: BoxDecoration(
-                          color: kWhite,
+                          color: kBlack,
                           borderRadius: BorderRadius.circular(18),
                           boxShadow: kShadow,
                         ),
@@ -316,7 +459,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             width: 40,
                             height: 40,
                             decoration: BoxDecoration(
-                              color: kBlack.withValues(alpha: 0.08),
+                              color: const Color(0xFFFEF88E),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(Icons.settings_rounded,
@@ -329,10 +472,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 14,
-                                  color: kBlack),
+                                  color: Color(0xFFFEF88E)),
                             ),
                           ),
-                          const Icon(Icons.chevron_right_rounded, color: kGrey),
+                          const Icon(Icons.chevron_right_rounded,
+                              color: Color(0xFFFEF88E)),
                         ]),
                       ),
                     ),
@@ -352,6 +496,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         decoration: BoxDecoration(
             color: kWhite,
             borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: kBlack.withValues(alpha: 0.06)),
             boxShadow: kShadow),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text('Personal Info',
@@ -359,16 +504,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   fontWeight: FontWeight.w800, fontSize: 15, color: kBlack)),
           const SizedBox(height: 16),
           _infoRow(Icons.phone_rounded, 'Phone', _user?['phoneNumber'] ?? '—',
-              kPrimaryLime),
+              const Color(0xFFFEF88E)),
           Divider(height: 20, color: kDivider),
           _infoRow(Icons.location_city_rounded, 'City',
-              _user?['city'] ?? 'Not set', kBlack),
+              _user?['city'] ?? 'Not set', const Color(0xFFFEF88E)),
           Divider(height: 20, color: kDivider),
           _infoRow(Icons.map_outlined, 'Area', _user?['area'] ?? 'Not set',
-              kPrimaryLime),
+              const Color(0xFFFEF88E)),
           Divider(height: 20, color: kDivider),
           _infoRow(Icons.flag_rounded, 'Country',
-              _user?['country'] ?? 'Not set', kBlack),
+              _user?['country'] ?? 'Not set', const Color(0xFFFEF88E)),
         ]),
       );
 
@@ -383,11 +528,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       decoration: BoxDecoration(
           color: kWhite,
           borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: kBlack.withValues(alpha: 0.06)),
           boxShadow: kShadow),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Skills',
-            style: TextStyle(
-                fontWeight: FontWeight.w800, fontSize: 15, color: kBlack)),
+        const Center(
+          child: Text('Skills',
+              style: TextStyle(
+                  fontWeight: FontWeight.w800, fontSize: 15, color: kBlack)),
+        ),
         const SizedBox(height: 12),
         skills.isEmpty
             ? const Text('No skills added.',
@@ -400,13 +548,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 7),
                           decoration: BoxDecoration(
-                            color: kPrimaryLime.withValues(alpha: 0.25),
+                            color: kBlack,
                             borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFFFEF88E)
+                                  .withValues(alpha: 0.18),
+                            ),
                           ),
                           child: Text(
                             skill.trim(),
                             style: const TextStyle(
-                                color: kBlack,
+                                color: Color(0xFFFEF88E),
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700),
                           ),
@@ -423,11 +575,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             width: 34,
             height: 34,
             decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
+                color: const Color(0xFFFEF88E).withValues(alpha: 0.18),
                 borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: color, size: 17)),
+            child: Icon(icon, color: kBlack, size: 17)),
         const SizedBox(width: 12),
-        Text(label, style: const TextStyle(color: kGrey, fontSize: 13)),
+        Text(label, style: TextStyle(color: kBlack, fontSize: 13)),
         const SizedBox(width: 10),
         Expanded(
           child: Text(value,

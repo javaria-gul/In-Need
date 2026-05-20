@@ -127,6 +127,20 @@ class ApiService {
     return _parse(res) as Map<String, dynamic>;
   }
 
+  Future<String> uploadAvatar(List<int> bytes, String filename) async {
+    final uri = Uri.parse(appConfig.endpoint('/users/me/avatar'));
+    final req = http.MultipartRequest('POST', uri);
+    final headers = await _headers();
+    req.headers.addAll(headers);
+    req.files
+        .add(http.MultipartFile.fromBytes('file', bytes, filename: filename));
+
+    final streamed = await req.send().timeout(const Duration(seconds: 30));
+    final res = await http.Response.fromStream(streamed);
+    final data = _parse(res) as Map<String, dynamic>;
+    return data['avatarUrl']?.toString() ?? '';
+  }
+
   Future<Map<String, dynamic>> getUser(int id) async {
     final res = await http
         .get(Uri.parse(appConfig.endpoint('/users/$id')),

@@ -3,6 +3,18 @@ import '../services/api_service.dart';
 import '../utils/app_theme.dart';
 import 'bids_screen.dart';
 
+// Pastel color palette for job cards
+const List<Color> kPastelColors = [
+  Color(0xFFFFD6E8), // Pastel pink
+  Color(0xFFC7CEEA), // Pastel purple
+  Color(0xFFB5EAD7), // Pastel mint
+  Color(0xFFFFFCC7), // Pastel yellow
+  Color(0xFFFFCCB4), // Pastel peach
+  Color(0xFFE0BBE4), // Pastel lavender
+  Color(0xFFD4F1F4), // Pastel cyan
+  Color(0xFFF8B4D6), // Pastel magenta
+];
+
 class PosterHomeScreen extends StatefulWidget {
   final Map<String, dynamic>? user;
   final VoidCallback onRefresh;
@@ -66,7 +78,6 @@ class _PosterHomeScreenState extends State<PosterHomeScreen> {
   Widget build(BuildContext context) {
     final user = widget.user;
     final fullName = user?['fullName'] as String? ?? '';
-    final initial = fullName.isNotEmpty ? fullName[0].toUpperCase() : 'A';
     final area = user?['area'] as String? ?? '';
     final city = user?['city'] as String? ?? '';
     final location = area.isNotEmpty && city.isNotEmpty ? '$area, $city' : city;
@@ -254,7 +265,7 @@ class _PosterHomeScreenState extends State<PosterHomeScreen> {
     final description = (job['description'] as String?) ??
         (job['details'] as String?) ??
         (job['summary'] as String?) ??
-        'No description provided for this post.';
+        'No description provided.';
     final price = (job['price'] as num?)?.toDouble() ?? 0;
     final bids = (job['bids'] as List<dynamic>?) ?? [];
     final exp = job['expiresAt'] != null
@@ -262,121 +273,393 @@ class _PosterHomeScreenState extends State<PosterHomeScreen> {
         : null;
     final remaining = exp != null ? exp.difference(DateTime.now()) : null;
 
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => BidsScreen(jobId: job['id'] as int)),
-      ).then((_) => _loadData()),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 14),
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: kBlack,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: kShadow,
-          border: Border.all(color: const Color(0xFFF9F77E), width: 1.3),
-        ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Expanded(
-              child: Text(title,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 15,
-                      color: kWhite)),
-            ),
-            if (bids.isNotEmpty)
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                    color: const Color(0xFFF9F77E),
-                    borderRadius: BorderRadius.circular(20)),
-                child: Row(children: [
-                  const Icon(Icons.notifications_rounded,
-                      color: kBlack, size: 13),
-                  const SizedBox(width: 4),
-                  Text('${bids.length} offers',
-                      style: const TextStyle(
-                          color: kBlack,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700)),
-                ]),
-              ),
-          ]),
-          const SizedBox(height: 8),
-          Row(children: [
-            const Icon(Icons.monetization_on_rounded,
-                color: Color(0xFFF9F77E), size: 14),
-            const SizedBox(width: 4),
-            Text('Rs. ${price.toStringAsFixed(0)}',
-                style: const TextStyle(color: kWhite, fontSize: 12)),
-            const Spacer(),
-            if (remaining != null && remaining.isNegative == false)
-              Text(
-                _formatRemaining(remaining),
-                style: TextStyle(
-                    color: const Color(0xFFF9F77E),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600),
-              ),
-          ]),
-          const SizedBox(height: 10),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: kBlack.withValues(alpha: 0.32),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                  color: const Color(0xFFF9F77E).withValues(alpha: 0.6)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Description',
-                    style: TextStyle(
-                        color: Color(0xFFF9F77E),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800)),
-                const SizedBox(height: 6),
-                Text(
-                  description,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: kWhite,
-                    fontSize: 12,
-                    height: 1.35,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
+    // Poster information
+    final poster = job['poster'] as Map<String, dynamic>? ?? {};
+    final posterName = poster['fullName'] as String? ?? 'Unknown';
+    final posterCity = poster['city'] as String? ?? '';
+    final posterArea = poster['area'] as String? ?? '';
+    final posterLocation =
+        [posterArea, posterCity].where((e) => e.isNotEmpty).join(', ');
+    final posterPic = (poster['profilePicUrl'] as String?)?.isEmpty == false
+        ? poster['profilePicUrl'] as String?
+        : null;
+    final posterRating = (poster['employerRating'] as num?)?.toDouble() ?? 0;
+    final posterRatingCount =
+        (poster['employerRatingCount'] as num?)?.toInt() ?? 0;
+
+    // Get deterministic pastel color based on job id
+    final cardColor =
+        kPastelColors[(job['id'] as int? ?? 0) % kPastelColors.length];
+    final isDark = _isColorDark(cardColor);
+    final textColor = isDark ? kWhite : kBlack;
+
+    // Status badge based on rating
+    final statusBadge = _getStatusBadge(posterRating);
+
+    return _SwipeableJobCard(
+      onSwipeRight: () {
+        // Right swipe: Accept and open bids
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => BidsScreen(jobId: job['id'] as int),
+          ),
+        ).then((_) => _loadData());
+      },
+      onSwipeLeft: () {
+        // Left swipe: Skip (do nothing or mark as skipped)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Card skipped ✓'),
+            backgroundColor: kBlack,
+            duration: const Duration(milliseconds: 800),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
-          const SizedBox(height: 10),
-          Row(children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                  color: const Color(0xFFF9F77E),
-                  borderRadius: BorderRadius.circular(8)),
-              child: const Text('LIVE',
-                  style: TextStyle(
-                      color: kBlack,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800)),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: cardColor.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
             ),
-            const Spacer(),
-            const Text('Tap to see offers →',
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Poster info header
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+              ),
+              child: Row(
+                children: [
+                  // Poster avatar
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: isDark
+                        ? kWhite.withValues(alpha: 0.15)
+                        : kBlack.withValues(alpha: 0.1),
+                    backgroundImage:
+                        posterPic != null ? NetworkImage(posterPic) : null,
+                    child: posterPic == null
+                        ? Text(
+                            posterName[0].toUpperCase(),
+                            style: TextStyle(
+                              color: textColor,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  // Poster details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          posterName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.location_on_rounded,
+                              color: textColor.withValues(alpha: 0.6),
+                              size: 13,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                posterLocation.isNotEmpty
+                                    ? posterLocation
+                                    : 'Location not set',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: textColor.withValues(alpha: 0.7),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        // Rating and reviews
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.star_rounded,
+                              color: Color(0xFFFFB800),
+                              size: 14,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '$posterRating',
+                              style: TextStyle(
+                                color: textColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '($posterRatingCount reviews)',
+                              style: TextStyle(
+                                color: textColor.withValues(alpha: 0.6),
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Status badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusBadge['color'] as Color,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          statusBadge['icon'] as IconData,
+                          color: kBlack,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          statusBadge['label'] as String,
+                          style: const TextStyle(
+                            color: kBlack,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Job title and price
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      if (bids.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFFF9F77E)
+                                : kBlack.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${bids.length} offers',
+                            style: TextStyle(
+                              color: isDark ? kBlack : textColor,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.monetization_on_rounded,
+                        color: isDark ? const Color(0xFF333333) : kBlack,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Rs. ${price.toStringAsFixed(0)}',
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (remaining != null && remaining.isNegative == false)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: kRed.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            _formatRemaining(remaining),
+                            style: const TextStyle(
+                              color: kRed,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // Description
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? kBlack.withValues(alpha: 0.06)
+                    : kBlack.withValues(alpha: 0.04),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: textColor.withValues(alpha: 0.1),
+                ),
+              ),
+              child: Text(
+                description,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    color: Color(0xFFF9F77E),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600)),
-          ]),
-        ]),
+                  color: textColor,
+                  fontSize: 13,
+                  height: 1.4,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            // Footer with swipe hints
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? kBlack.withValues(alpha: 0.04)
+                    : kBlack.withValues(alpha: 0.02),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
+                border: Border(
+                  top: BorderSide(
+                    color: textColor.withValues(alpha: 0.08),
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.touch_app_rounded,
+                    color: textColor.withValues(alpha: 0.5),
+                    size: 14,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      '← Swipe to skip  •  Swipe right to view offers →',
+                      style: TextStyle(
+                        color: textColor.withValues(alpha: 0.6),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  // Helper to determine if color is dark
+  bool _isColorDark(Color color) {
+    final luminance = color.computeLuminance();
+    return luminance < 0.5;
+  }
+
+  // Get status badge based on rating
+  Map<String, dynamic> _getStatusBadge(double rating) {
+    if (rating >= 4.8) {
+      return {
+        'label': 'PRO',
+        'color': const Color(0xFF4CAF50),
+        'icon': Icons.verified_rounded,
+      };
+    } else if (rating >= 4.5) {
+      return {
+        'label': 'TRUSTED',
+        'color': const Color(0xFF2196F3),
+        'icon': Icons.shield_rounded,
+      };
+    } else if (rating >= 4.0) {
+      return {
+        'label': 'GOOD',
+        'color': const Color(0xFFFFB800),
+        'icon': Icons.thumb_up_rounded,
+      };
+    } else {
+      return {
+        'label': 'NEW',
+        'color': const Color(0xFFE0E0E0),
+        'icon': Icons.star_rounded,
+      };
+    }
   }
 
   String _formatRemaining(Duration d) {
@@ -405,7 +688,9 @@ class _PosterHomeScreenState extends State<PosterHomeScreen> {
               style: TextStyle(color: kGrey, fontSize: 13)),
           const SizedBox(height: 20),
           GestureDetector(
-            onTap: () => Navigator.pushNamed(context, '/post-job'),
+            onTap: () {
+              Navigator.pushNamed(context, '/post-job');
+            },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               decoration: BoxDecoration(
@@ -417,4 +702,149 @@ class _PosterHomeScreenState extends State<PosterHomeScreen> {
           ),
         ]),
       );
+}
+
+// Swipeable card widget for job cards
+class _SwipeableJobCard extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onSwipeRight;
+  final VoidCallback onSwipeLeft;
+
+  const _SwipeableJobCard({
+    required this.child,
+    required this.onSwipeRight,
+    required this.onSwipeLeft,
+  });
+
+  @override
+  State<_SwipeableJobCard> createState() => _SwipeableJobCardState();
+}
+
+class _SwipeableJobCardState extends State<_SwipeableJobCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  double _dragOffset = 0;
+  bool _isDragging = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _onHorizontalDragUpdate(DragUpdateDetails details) {
+    setState(() {
+      _isDragging = true;
+      _dragOffset += details.delta.dx;
+    });
+  }
+
+  void _onHorizontalDragEnd(DragEndDetails details) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    const swipeThreshold = 0.15; // 15% of screen width
+
+    if (_dragOffset.abs() > screenWidth * swipeThreshold) {
+      if (_dragOffset > 0) {
+        // Swiped right
+        widget.onSwipeRight();
+      } else {
+        // Swiped left
+        widget.onSwipeLeft();
+      }
+      // Animate off screen
+      _animationController.forward(from: 0).then((_) {
+        if (mounted) {
+          setState(() {
+            _dragOffset = 0;
+            _isDragging = false;
+          });
+          _animationController.reset();
+        }
+      });
+    } else {
+      // Not enough drag, snap back
+      _animationController.forward(from: 0).then((_) {
+        if (mounted) {
+          setState(() {
+            _dragOffset = 0;
+            _isDragging = false;
+          });
+          _animationController.reset();
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onHorizontalDragUpdate: _onHorizontalDragUpdate,
+      onHorizontalDragEnd: _onHorizontalDragEnd,
+      child: Opacity(
+        opacity: (1 - (_dragOffset.abs() / 300)).clamp(0, 1),
+        child: Transform.translate(
+          offset: Offset(_dragOffset, 0),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: _dragOffset > 0
+                    ? const Color(0xFF4CAF50).withValues(alpha: 0.3)
+                    : kRed.withValues(alpha: 0.3),
+                width: 2,
+              ),
+            ),
+            child: Stack(
+              children: [
+                // Background swipe indicator
+                if (_isDragging)
+                  Positioned(
+                    left: 16,
+                    top: 0,
+                    bottom: 0,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: _dragOffset > 0
+                          ? const Icon(
+                              Icons.check_rounded,
+                              color: Color(0xFF4CAF50),
+                              size: 40,
+                            )
+                          : null,
+                    ),
+                  ),
+                if (_isDragging)
+                  Positioned(
+                    right: 16,
+                    top: 0,
+                    bottom: 0,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: _dragOffset < 0
+                          ? const Icon(
+                              Icons.close_rounded,
+                              color: kRed,
+                              size: 40,
+                            )
+                          : null,
+                    ),
+                  ),
+                // Main card
+                widget.child,
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
