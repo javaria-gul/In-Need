@@ -4,7 +4,7 @@
 ![License](https://img.shields.io/badge/License-MIT-blue)
 ![Version](https://img.shields.io/badge/Version-2.0-orange)
 
-> **Apka Hunar** (آپکا ہنر) is a comprehensive digital platform connecting skilled professionals with clients who need their expertise. Built with modern technologies for scalability, security, and excellent user experience.
+> **In-Need**  is a comprehensive digital platform connecting skilled professionals with clients who need their expertise. Built with modern technologies for scalability, security, and excellent user experience.
 
 ---
 
@@ -89,8 +89,8 @@ Apka Hunar/
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/yourusername/apka-hunar.git
-cd apka-hunar
+git clone https://github.com/javaria-gul/In-Need.git
+cd In-Need
 
 # 2. Setup environment
 cp .env.example .env.development
@@ -147,11 +147,6 @@ CORS_ORIGIN=https://your-domain.com
 
 **⚠️ IMPORTANT:** Never commit `.env` files. Use `.env.example` as template.
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for free hosting deployment steps and service connection details.
-
-See [SECURITY.md](./SECURITY.md) for detailed security configuration.
-
----
 
 ## 📦 Project Structure
 
@@ -222,34 +217,13 @@ apka-hunar/
 - Comprehensive logging
 - Security headers configured
 
-**⚠️ CRITICAL:** Read [SECURITY.md](./SECURITY.md) before deploying to production!
-
----
-
-## 🚀 Deployment
 
 ### Development
 ```bash
 docker-compose up -d
 ```
 
-### Production
-```bash
-# 1. Create production environment
-cp .env.example .env.production
-# Edit with production values
 
-# 2. Build production images
-docker build -t apka-hunar:latest ./backend-gateway
-docker build -t apka-hunar-ai:latest ./ai-matching-service
-
-# 3. Deploy with docker-compose
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-**For detailed deployment instructions:** See [DEPLOYMENT.md](./DEPLOYMENT.md)
-
----
 
 ## 📚 API Documentation
 
@@ -282,9 +256,6 @@ POST   /reviews                 # Submit review
 GET    /reviews/user/:userId    # Get user reviews
 ```
 
-**Full API documentation:** http://192.168.1.11:3000/api (Swagger UI)
-
----
 
 ## 🤖 AI Matching Algorithm
 
@@ -409,10 +380,6 @@ kill -9 PID
 PORT=3001 docker-compose up -d
 ```
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md#troubleshooting) for more troubleshooting.
-
----
-
 ## 📈 Performance Optimization
 
 - ✅ Database indexes on frequently queried columns
@@ -453,11 +420,7 @@ MIT License - See [LICENSE](./LICENSE) file
 
 ## 👥 Credits
 
-**Development Team:**
-- Project Lead: [Your Name]
-- Frontend: [Name]
-- Backend: [Name]
-- DevOps: [Name]
+Javaria gul 
 
 **Special Thanks:**
 - NestJS community
@@ -468,10 +431,9 @@ MIT License - See [LICENSE](./LICENSE) file
 
 ## 📞 Support & Contact
 
-- 📧 Email: support@apkahunar.com
+- 📧 Email: javariagul73@gmail.com
 - 🐛 Bug Reports: GitHub Issues
 - 🚀 Feature Requests: GitHub Discussions
-- 💬 Discord: [Join Community](https://discord.gg/your-link)
 
 ---
 
@@ -481,14 +443,10 @@ MIT License - See [LICENSE](./LICENSE) file
 
 ⚠️ **DO NOT** create a public issue
 
-📧 Email security@apkahunar.com with:
+📧 Email javariagul73@gmail.com with:
 - Description of vulnerability
 - Steps to reproduce
 - Potential impact
-
-See [SECURITY.md](./SECURITY.md) for detailed security guidelines.
-
----
 
 ## 📝 Changelog
 
@@ -496,7 +454,6 @@ See [SECURITY.md](./SECURITY.md) for detailed security guidelines.
 - ✨ Environment-based configuration
 - 🔒 Enhanced security with ConfigService
 - 📝 Comprehensive documentation
-- 🚀 Production-ready deployment guide
 - 🐳 Docker optimization
 - ✅ Security audit completed
 
@@ -510,7 +467,4 @@ See [SECURITY.md](./SECURITY.md) for detailed security guidelines.
 
 **Ready to revolutionize skilled work? Let's build together! 🚀**
 
-For detailed setup and deployment information:
-- **Getting Started:** [DEPLOYMENT.md](./DEPLOYMENT.md)
-- **Security Guide:** [SECURITY.md](./SECURITY.md)
-- **API Docs:** http://192.168.1.11:3000/api (after `docker-compose up`)
+
