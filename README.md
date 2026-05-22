@@ -1,4 +1,4 @@
-# 🛠️ Apka Hunar - Professional Skill Marketplace
+# 🛠️ In-Need - Professional Skill Marketplace
 
 ![Platform](https://img.shields.io/badge/Status-Production--Ready-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-blue)
