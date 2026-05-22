@@ -1,6 +1,6 @@
-# 🤝 Contributing to Apka Hunar
+# 🤝 Contributing to In-Need
 
-Thank you for your interest in contributing to Apka Hunar! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing to In-Need! This document provides guidelines and instructions for contributing to the project.
 
 ---
 
@@ -20,8 +20,8 @@ Thank you for your interest in contributing to Apka Hunar! This document provide
 
 ```bash
 # Fork on GitHub, then:
-git clone https://github.com/YOUR-USERNAME/apka-hunar.git
-cd apka-hunar
+git clone https://github.com/javaria-gul/In-Need.git
+cd In-Need
 ```
 
 ### 2. Setup Development Environment
@@ -383,10 +383,9 @@ flutter test
 
 When adding features, update:
 1. README.md - Feature overview
-2. DEPLOYMENT.md - Configuration changes
-3. Code comments - Explain complex logic
-4. API docs - Add Swagger annotations
-5. CHANGELOG.md - Notable changes
+2. Code comments - Explain complex logic
+3. API docs - Add Swagger annotations
+4. CHANGELOG.md - Notable changes
 
 **Example Swagger Annotation:**
 
@@ -448,8 +447,8 @@ error logs here
 
 - 💬 GitHub Discussions
 - 🐛 GitHub Issues
-- 📧 Email: dev@apkahunar.com
-- 🤝 Discord Community (link in README)
+- 📧 Email: javariagul73@gmail.com
+
 
 ---
 
@@ -484,4 +483,4 @@ docker-compose up -d
 
 ---
 
-**Thank you for contributing to Apka Hunar! 🙏**
+**Thank you for contributing toIn-Need! 🙏**
